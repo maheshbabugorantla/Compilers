@@ -1,0 +1,31 @@
+
+%{
+#include <iostream>
+#include <string>
+#include <map>
+#include <cstdlib> 
+
+using namespace std;
+
+// --Lexer Prototype required by bison, aka getNextToken()
+
+int yylex();
+int yyerror(const char* p)
+{
+	cerr << "Not Accepted" << endl;
+}
+
+%}
+
+%union
+{
+	int val;
+	char sym;
+};
+
+%token <val> NUM
+%token <sym> OPA OPM LP RP STOP
+%type <val> exp term sfactor factor res
+
+%%
+
