@@ -8,16 +8,14 @@ group:
 compiler: clean
 	mkdir generated
 	mkdir objects
+	bison -d src/sample.ypp
 	flex src/Scanner_Step2.l
-	gcc lex.yy.c -lfl -o micro
-	mv -f lex.yy.c generated/
-
-
-
+	g++ -o micro sample.tab.cpp lex.yy.c	
+	mv -f lex.yy.c sample.tab.cpp sample.tab.hpp generated/
 
 clean:
-	rm -rf generated 
-	rm -rf objects
-	rm -f micro
+	rm -rf generated > /dev/null
+	rm -rf objects > /dev/null
+	rm -f micro > /dev/null
 
 .PHONY: all group compiler clean

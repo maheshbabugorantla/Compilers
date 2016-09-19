@@ -1,12 +1,11 @@
 %{
-	#include "sample.tab.hpp"
-	#include <iostream>
-	#include <string>	
-	using namespace std;
+	#include"sample.tab.hpp"
 %}
 
+%option noyywrap
+
 %%
-"\-\-".+$	{yylval.sym = ""; return COMM; }
+"\-\-".+$	{ }
 PROGRAM		{yylval.sym = yytext; return PROGRAM; }
 BEGIN		{yylval.sym = yytext; return BEGIN_B; }
 END		{yylval.sym = yytext; return END; }
@@ -46,9 +45,9 @@ FALSE		{yylval.sym = yytext; return FALSE; }
 
 "\""([^"\""]{0,80})"\""	{yylval.sym = yytext; return STRINGLITERAL; }
 [a-zA-Z]{1}[a-zA-Z0-9]{0,30}+	{yylval.sym = yytext; return IDENTIFIER; }
-[0-9]+		{yylval.val_I = atoi(yytext); return INTEGERLITERAL; }
-[0-9]{0,4}\.[0-9]{1,6}+	 {yylval.val_F = atof(yytext); return FLOATLITERAL; }
-[ \t\n] { return SPACE; }
-. { cerr << "Unrecognized Token" << endl; exit(1); }
+[0-9]+		{yylval.sym = yytext; return INTLITERAL; }
+[0-9]{0,4}\.[0-9]{1,6}+	 {yylval.sym = yytext; return FLOATLITERAL; }
+[ \t\n] { yylval.sym = yytext; }
+. { printf("Unrecognized Token\n"); exit(1); }
 
 %%
