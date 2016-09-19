@@ -31,11 +31,11 @@ pgm_body: decl func_declarations;
 decl: | string_decl decl | var_decl decl;
 
 /* Global String Declaration */
-string_decl: STRING id EQ str;
+string_decl: STRING id EQ str SC;
 str: STRINGLITERAL;
 
 /* Variable Declarations */
-var_decl: var_type id_list;
+var_decl: var_type id_list SC;
 var_type: FLOAT|INT;
 any_type: var_type | VOID;
 id_list: id id_tail;
@@ -57,11 +57,11 @@ stmt: base_stmt | if_stmt | do_while_stmt;
 base_stmt: assign_stmt | read_stmt | write_stmt | return_stmt;
 
 /* Basic Statements */
-assign_stmt: assign_expr;
+assign_stmt: assign_expr SC;
 assign_expr: id EQ expr;
-read_stmt: READ LP id_list RP;
-write_stmt: WRITE LP id_list RP;
-return_stmt: RETURN expr;
+read_stmt: READ LP id_list RP SC;
+write_stmt: WRITE LP id_list RP SC;
+return_stmt: RETURN expr SC;
 
 /* Expressions */
 expr: expr_prefix factor;
@@ -82,7 +82,7 @@ else_part: | ELSIF LP cond RP decl stmt_list else_part;
 cond: expr compop expr | TRUE | FALSE;
 compop: LT | GT | EQU | NEQU | LTEQ | GTEQ;
 
-do_while_stmt: DO decl stmt_list WHILE LP cond RP; 
+do_while_stmt: DO decl stmt_list WHILE LP cond RP SC;
 
 %%
 
