@@ -1,20 +1,19 @@
 %{
-	#include <iostream>
-	#include <string>
-	using namespace std;
+	#include "lex.yy.c"
+	#include<stdio.h>
+	#include<string.h>
+
+	typedef struct
+	{
+		char* sym;
+	} yylex_val;
 	
-	int yylex();
-	int yyerror(const char *p) {  cout << "Not Accepted" << endl; return 1; }
+	int yylex( yylex_val yylval; return 1;);
+	int yyerror(const char *p) {  printf("Not Accepted\n"); }
 
 %}
 
-%union{
-	int Val_I;
-	float Val_F;
-	char* sym;
-}
-
-%token <sym> PROGRAM BEGIN_B END FUNCTION READ WRITE IF ELSIF ENDIF DO WHILE CONTINUE BREAK RETURN INT VOID STRING FLOAT TRUE FALSE EQ ADD SUB MUL DIV EQU NEQU LT GT LP RP SC CM LTEQ GTEQ IDENTIFIER STRINGLITERAL
+%token <sym> PROGRAM BEGIN_B END FUNCTION READ WRITE IF ELSIF ENDIF DO WHILE CONTINUE BREAK RETURN INT VOID STRING FLOAT TRUE FALSE EQ ADD SUB MUL DIV EQU NEQU LT GT LP RP SC CM LTEQ GTEQ SPACE IDENTIFIER STRINGLITERAL
 
 %token <sym> INTLITERAL
 %token <sym> FLOATLITERAL
@@ -25,7 +24,7 @@
 %% /* Grammar rules and actions follow */
 
 /* Program */
-program: PROGRAM id BEGIN_B pgm_body END { cout << "Accepted" << endl; return 0; }
+program: PROGRAM id BEGIN_B pgm_body END;
 id: IDENTIFIER;
 pgm_body: decl func_declarations;
 decl: | string_decl decl | var_decl decl;

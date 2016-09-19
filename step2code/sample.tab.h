@@ -74,32 +74,18 @@
      CM = 290,
      LTEQ = 291,
      GTEQ = 292,
-     IDENTIFIER = 293,
-     STRINGLITERAL = 294,
-     INTLITERAL = 295,
-     FLOATLITERAL = 296
+     SPACE = 293,
+     IDENTIFIER = 294,
+     STRINGLITERAL = 295,
+     INTLITERAL = 296,
+     FLOATLITERAL = 297
    };
 #endif
 
 
 
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
-typedef union YYSTYPE
-{
 
-/* Line 1676 of yacc.c  */
-#line 11 "sample.ypp"
-
-	int Val_I;
-	float Val_F;
-	char* sym;
-
-
-
-/* Line 1676 of yacc.c  */
-#line 101 "sample.tab.hpp"
-} YYSTYPE;
-# define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
 #endif
