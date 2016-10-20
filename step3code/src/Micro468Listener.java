@@ -38,12 +38,14 @@ public class Micro468Listener extends MicroBaseListener{
 		String[] intVal = currentValue.split(",");
 		for (int index = 0; index < intVal.length; index++) {
 		if (currentValue.startsWith("INT", 0)) {
-				String str = intVal[index].subString(3);
+				String str = intVal[index];
+				str = str.substring(3);
 				Symbols symbol = new Symbols(str, "INT");
 				table.addSymbol(symbol);
 		}
 		else if (currentValue.startsWith("FLOAT", 0)) {
-				String str = intVal[index].subString(5);
+				String str = intVal[index];
+				str = str.substring(5);
 				Symbols symbol = new Symbols(str, "FLOAT");
 				table.addSymbol(symbol);
 			}
