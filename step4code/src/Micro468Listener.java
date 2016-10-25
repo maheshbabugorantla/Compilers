@@ -6,7 +6,7 @@ public class Micro468Listener extends MicroBaseListener {
 
 
 	public SymbolsTree symbolsTree;
-	
+
 	private int blockNum;
 	private int regNum;
 	private int tinyReg;
@@ -320,41 +320,42 @@ public class Micro468Listener extends MicroBaseListener {
 		}
 	}
 
-	@Override public void enterWrite_stmt(MicroParser.Write_stmtContext ctx) {
+	@Override
+	public void enterWrite_stmt(MicroParser.Write_stmtContext ctx) {
 
 		//System.out.println("Enter Write_stmt");
 
-		if(ctx.getChild(2) == null || ctx.getChild(2).getText().equals("")) {
+		if (ctx.getChild(2) == null || ctx.getChild(2).getText().equals("")) {
 			return;
 		}
 
 		String[] ids = ctx.getChild(2).getText().split(",");
 
-		for(String id: ids) {
+		for (String id : ids) {
 			String type = symbolsTree.getParentScope().checkDataType(id);
 
 			// The Input Symbol is not present in the SymbolTable
-			if(type == null) {
+			if (type == null) {
 				System.out.println("ERROR ID");
 				return;
 			}
 
-			if(type.equals("INT")) {
-				IRNode irNodeI = new IRNode("WRITEI",id);
-				TinyNode tinyNode = new TinyNode("sys writei",id);
+			if (type.equals("INT")) {
+				IRNode irNodeI = new IRNode("WRITEI", id);
+				TinyNode tinyNode = new TinyNode("sys writei", id);
 				nodesPrinter.addIRNode(irNodeI);
 				tinyNodeArrayList.add(tinyNode);
-			}
-			else if(type.equals("FLOAT")) {
-				IRNode irNodeF = new IRNode("WRITEF",id);
-				TinyNode tinyNode = new TinyNode("sys writer",id);
+			} else if (type.equals("FLOAT")) {
+				IRNode irNodeF = new IRNode("WRITEF", id);
+				TinyNode tinyNode = new TinyNode("sys writer", id);
 				nodesPrinter.addIRNode(irNodeF);
 				tinyNodeArrayList.add(tinyNode);
 			}
 		}
 	}
 
-	@Override public void enterAssign_expr(MicroParser.Assign_exprContext ctx) {
+	@Override
+	public void enterAssign_expr(MicroParser.Assign_exprContext ctx) {
 
 //		System.out.println("Enter Assign_expr");
 
@@ -375,11 +376,11 @@ public class Micro468Listener extends MicroBaseListener {
 			String regStore = getRegister();
 			String tinyReg = getTinyRegister();
 
-			nodesPrinter.addIRNode(new IRNode(checkStore(symbolsTree.getParentScope().checkDataType(store)),expr,regStore));
-			nodesPrinter.addIRNode(new IRNode(checkStore(symbolsTree.getParentScope().checkDataType(store)),regStore,store));
+			nodesPrinter.addIRNode(new IRNode(checkStore(symbolsTree.getParentScope().checkDataType(store)), expr, regStore));
+			nodesPrinter.addIRNode(new IRNode(checkStore(symbolsTree.getParentScope().checkDataType(store)), regStore, store));
 
-			tinyNodeArrayList.add(new TinyNode("move",expr,tinyReg));
-			tinyNodeArrayList.add(new TinyNode("move",tinyReg,store));
+			tinyNodeArrayList.add(new TinyNode("move", expr, tinyReg));
+			tinyNodeArrayList.add(new TinyNode("move", tinyReg, store));
 
 		} catch (NumberFormatException e) {
 
@@ -392,11 +393,11 @@ public class Micro468Listener extends MicroBaseListener {
 				String regStore = getRegister();
 				String tinyReg = getTinyRegister();
 
-				nodesPrinter.addIRNode(new IRNode(checkStore(symbolsTree.getParentScope().checkDataType(store)),expr,regStore));
-				nodesPrinter.addIRNode(new IRNode(checkStore(symbolsTree.getParentScope().checkDataType(store)),regStore,store));
+				nodesPrinter.addIRNode(new IRNode(checkStore(symbolsTree.getParentScope().checkDataType(store)), expr, regStore));
+				nodesPrinter.addIRNode(new IRNode(checkStore(symbolsTree.getParentScope().checkDataType(store)), regStore, store));
 
-				tinyNodeArrayList.add(new TinyNode("move",expr,tinyReg));
-				tinyNodeArrayList.add(new TinyNode("move",tinyReg,store));
+				tinyNodeArrayList.add(new TinyNode("move", expr, tinyReg));
+				tinyNodeArrayList.add(new TinyNode("move", tinyReg, store));
 			}
 		} catch (NumberFormatException e) {
 			String postFixExpr = infix_to_Postfix(expr);
@@ -408,6 +409,7 @@ public class Micro468Listener extends MicroBaseListener {
 	public void parsePostfixExpr(String postFix_Expr, String type, String outputVariable) {
 
 		Stack<String> RegisterStack = new Stack<String>();
+		Stack<String> tinyRegisterStack = new Stack<String>();
 
 		String[] elements = postFix_Expr.split(" ");
 
@@ -419,26 +421,49 @@ public class Micro468Listener extends MicroBaseListener {
 				String Node1 = RegisterStack.pop();
 				String Node2 = RegisterStack.pop();
 
+				String tinyNode1 = tinyRegisterStack.pop();
+				String tinyNode2 = tinyRegisterStack.pop();
+
 				String newRegister = getRegister();
+				String tinyRegister = getTinyRegister();
 
-				if(elements[index].equals("+")) {
-					nodesPrinter.addIRNode(new IRNode(OpCodeCheck("+",type),Node2,Node1,newRegister));
-					RegisterStack.push(newRegister);
-				}
+				if (elements[index].equals("+")) {
 
-				else if(elements[index].equals("-")) {
-					nodesPrinter.addIRNode(new IRNode(OpCodeCheck("-",type),Node2,Node1,newRegister));
+					nodesPrinter.addIRNode(new IRNode(OpCodeCheck("+", type), Node2, Node1, newRegister));
 					RegisterStack.push(newRegister);
-				}
 
-				else if(elements[index].equals("*")) {
-					nodesPrinter.addIRNode(new IRNode(OpCodeCheck("*",type),Node2,Node1,newRegister));
+					if (symbolsTree.getParentScope().checkDataType(tinyNode2) != null) {
+						tinyNodeArrayList.add(new TinyNode("move", tinyNode2, tinyRegister));
+					}
+					tinyNodeArrayList.add(new TinyNode(tinyOpCodeCheck("+", type), tinyNode1, tinyRegister));
+					tinyRegisterStack.push(tinyRegister);
+				} else if (elements[index].equals("-")) {
+					nodesPrinter.addIRNode(new IRNode(OpCodeCheck("-", type), Node2, Node1, newRegister));
 					RegisterStack.push(newRegister);
-				}
 
-				else if(elements[index].equals("/")) {
-					nodesPrinter.addIRNode(new IRNode(OpCodeCheck("/",type),Node2,Node1,newRegister));
+					if (symbolsTree.getParentScope().checkDataType(tinyNode2) != null) {
+						tinyNodeArrayList.add(new TinyNode("move", tinyNode2, tinyRegister));
+					}
+					tinyNodeArrayList.add(new TinyNode(tinyOpCodeCheck("-", type), tinyNode1, tinyRegister));
+					tinyRegisterStack.push(tinyRegister);
+				} else if (elements[index].equals("*")) {
+					nodesPrinter.addIRNode(new IRNode(OpCodeCheck("*", type), Node2, Node1, newRegister));
 					RegisterStack.push(newRegister);
+
+					if (symbolsTree.getParentScope().checkDataType(tinyNode2) != null) {
+						tinyNodeArrayList.add(new TinyNode("move", tinyNode2, tinyRegister));
+					}
+					tinyNodeArrayList.add(new TinyNode(tinyOpCodeCheck("*", type), tinyNode1, tinyRegister));
+					tinyRegisterStack.push(tinyRegister);
+				} else if (elements[index].equals("/")) {
+					nodesPrinter.addIRNode(new IRNode(OpCodeCheck("/", type), Node2, Node1, newRegister));
+					RegisterStack.push(newRegister);
+
+					if (symbolsTree.getParentScope().checkDataType(tinyNode2) != null) {
+						tinyNodeArrayList.add(new TinyNode("move", tinyNode2, tinyRegister));
+					}
+					tinyNodeArrayList.add(new TinyNode(tinyOpCodeCheck("/", type), tinyNode1, tinyRegister));
+					tinyRegisterStack.push(tinyRegister);
 				}
 
 			} else {
@@ -448,31 +473,43 @@ public class Micro468Listener extends MicroBaseListener {
 					Integer.parseInt(elements[index]);
 					flag_integer = 1;
 					String regStore = getRegister();
-					nodesPrinter.addIRNode(new IRNode(checkStore(type),elements[index],regStore));
+					String tinyRegStore = getTinyRegister();
+
+					nodesPrinter.addIRNode(new IRNode(checkStore(type), elements[index], regStore));
 					RegisterStack.push(regStore);
-				}
-				catch (NumberFormatException e) {
+
+					tinyNodeArrayList.add(new TinyNode("move", elements[index], tinyRegStore));
+					tinyRegisterStack.push(tinyRegStore);
+				} catch (NumberFormatException e) {
 
 				}
 
 				try {
-					if(flag_integer == 0) {
+					if (flag_integer == 0) {
 						Float.parseFloat(elements[index]);
-						String regStore = getRegister();
-						nodesPrinter.addIRNode(new IRNode(checkStore(type),elements[index],regStore));
-						RegisterStack.push(regStore);
-					}
-				}
 
-				catch (NumberFormatException e) {
+						String regStore = getRegister();
+						String tinyRegStore = getTinyRegister();
+
+						nodesPrinter.addIRNode(new IRNode(checkStore(type), elements[index], regStore));
+						RegisterStack.push(regStore);
+
+						tinyNodeArrayList.add(new TinyNode("move", elements[index], tinyRegStore));
+						tinyRegisterStack.push(tinyRegStore);
+					}
+				} catch (NumberFormatException e) {
 					RegisterStack.push(elements[index]); // Pushing the Variable Names to the Stack
+					tinyRegisterStack.push(elements[index]);
 				}
 			}
 		}
 
 		// Storing the Final Value of the Expression
 		String FinalRegister = RegisterStack.pop();
-		nodesPrinter.addIRNode(new IRNode(checkStore(type),FinalRegister,outputVariable));
+		nodesPrinter.addIRNode(new IRNode(checkStore(type), FinalRegister, outputVariable));
+
+		String FinalTinyRegister = tinyRegisterStack.pop();
+		tinyNodeArrayList.add(new TinyNode("move", FinalTinyRegister, outputVariable));
 
 		return;
 	}
@@ -480,8 +517,16 @@ public class Micro468Listener extends MicroBaseListener {
 	//System.out.println("; " + opName + " " + ctx.getChild(2).getText() + " " + getRegister()); // Have to change this to IRNode
 
 	//	nodesPrinter.addIRNode(new IRNode(opName, exprText,result))
-}
 
+	@Override
+	public void enterVar_decl(MicroParser.Var_declContext ctx) {
+		String[] variables = ctx.getChild(1).getText().split(",");
+
+		for (String variable : variables) {
+			tinyNodeArrayList.add(new TinyNode("var", variable));
+		}
+	}
+}
 // Used to add IRNodes to IRNodeList and print the IR Instructions
 class NodesPrinter {
 
