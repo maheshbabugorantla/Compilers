@@ -40,12 +40,12 @@ public class IRNode {
 
         String semi_colon = ";";
 
-        // For STOREI and STOREF
-        if(Sec_Op == null) {
-            return (semi_colon + OpCode + " " + Fst_Op + " " + Result);
-        }
-        else if(Sec_Op == null && Fst_Op == null) {
+        // JUMP, LABEL, READI, READF, WRITEI, WRITEF
+        if(Sec_Op == null && Fst_Op == null) {
             return (semi_colon + OpCode + " " + Result);
+        }
+        else if(Sec_Op == null) { // For STOREI and STOREF
+            return (semi_colon + OpCode + " " + Fst_Op + " " + Result);
         }
         else {
             return (semi_colon + OpCode + " " + Fst_Op + " " + Sec_Op + " " + Result);
