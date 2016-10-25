@@ -176,28 +176,28 @@ public class Micro468Listener extends MicroBaseListener {
 			if (Type.equals("INT")) {
 				return "addi"; //Adding Integer
 			} else if (Type.equals("FLOAT")) {
-				return "addf";
+				return "addr";
 			}
 		}
 		if (Operation.equals("-")) {
 			if (Type.equals("INT")) {
 				return "subi"; //subtraction Integer
 			} else if (Type.equals("FLOAT")) {
-				return "subf";
+				return "subr";
 			}
 		}
 		if (Operation.equals("*")) {
 			if (Type.equals("INT")) {
 				return "muli"; //multiplication Integer
 			} else if (Type.equals("FLOAT")) {
-				return "mulf";
+				return "mulr";
 			}
 		}
 		if (Operation.equals("/")) {
 			if (Type.equals("INT")) {
 				return "divi"; //Division integer
 			} else if (Type.equals("FLOAT")) {
-				return "divf";
+				return "divr";
 			}
 		}
 		return "error"; // invalid operator
