@@ -145,17 +145,6 @@ public class Micro468Listener extends MicroBaseListener {
 		return registerNo;
 	}
 
-/*	public String getTinyRegister(String tiny) {
-
-		if(tiny.contains("$") && registerMap.contains(tiny)) {
-			return registerMap.get(tiny);
-		}
-
-		tinyReg += 1;
-		String registerNo = new String("r" + tinyReg);
-		return registerNo;
-	} */
-
 	public String OpCodeCheck(String Operation, String Type) {
 		if (Operation.equals("+")) {
 			if (Type.equals("INT")) {
@@ -247,9 +236,6 @@ public class Micro468Listener extends MicroBaseListener {
 	// Here we print the whole symbolsTree when we exit the PROGRAM
 	@Override
 	public void exitPgm_body(MicroParser.Pgm_bodyContext ctx) {
-		//System.out.println("Exit Pgm_body");
-		//	symbolsTree.printWholeTree(); // Print the whole SymbolTree Blocks
-		//nodesPrinter.addSymbols(symbolsTree.getAllSymbols(symbolsTree.getParentScope()));
 		nodesPrinter.printIRNodes();
 		convertIRtoTiny(nodesPrinter.getIRNodeList());
 		TinyNode.printTinyList(tinyNodeArrayList);
@@ -320,7 +306,7 @@ public class Micro468Listener extends MicroBaseListener {
 	@Override
 	public void enterDo_while_stmt(MicroParser.Do_while_stmtContext ctx) {
 
-		System.out.println("Enter Do_while");
+		//System.out.println("Enter Do_while");
 
 		if (ctx.getChild(0) == null)
 			return;
@@ -363,14 +349,10 @@ public class Micro468Listener extends MicroBaseListener {
 
 			if (type.equals("INT")) {
 				IRNode irNodeI = new IRNode("WRITEI", id);
-				//TinyNode tinyNode = new TinyNode("sys writei", id);
 				nodesPrinter.addIRNode(irNodeI);
-				//tinyNodeArrayList.add(tinyNode);
 			} else if (type.equals("FLOAT")) {
 				IRNode irNodeF = new IRNode("WRITEF", id);
-				//TinyNode tinyNode = new TinyNode("sys writer", id);
 				nodesPrinter.addIRNode(irNodeF);
-				//tinyNodeArrayList.add(tinyNode);
 			}
 		}
 	}
@@ -391,9 +373,6 @@ public class Micro468Listener extends MicroBaseListener {
 
 		try {
 			Integer.parseInt(expr);
-
-			//System.out.println("Integer Assigned");
-			//System.out.println("Entered Expr" + Integer.toString(entered_Expr));
 
 			flag_int = 1;
 
@@ -427,7 +406,6 @@ public class Micro468Listener extends MicroBaseListener {
 				}
 			}
 		} catch (NumberFormatException e) {
-			//entered_Expr = 1;
 			exit_init = 1;
 			String postFixExpr = infix_to_Postfix(expr);
 
@@ -543,10 +521,6 @@ public class Micro468Listener extends MicroBaseListener {
 		return;
 	}
 
-	//System.out.println("; " + opName + " " + ctx.getChild(2).getText() + " " + getRegister()); // Have to change this to IRNode
-
-	//	nodesPrinter.addIRNode(new IRNode(opName, exprText,result))
-
 	@Override
 	public void enterVar_decl(MicroParser.Var_declContext ctx) {
 		String[] variables = ctx.getChild(1).getText().split(",");
@@ -570,8 +544,6 @@ public class Micro468Listener extends MicroBaseListener {
 					tinyNodeArrayList.add(new TinyNode(tinyOpCodeCheck(irNode.OpCode), irNode.Sec_Op, registerMap.get(irNode.Fst_Op)));
 					registerMap.put(irNode.Result, registerMap.get(irNode.Fst_Op));
 				} else if (irNode.Sec_Op.contains("$")) {
-
-//				String tinyRegister = getTinyRegister(); // Might have to Change this
 
 					tinyNodeArrayList.add(new TinyNode("move", irNode.Fst_Op, "r" + Integer.toString(tinyReg)));
 					registerMap.put(irNode.Fst_Op, "r" + Integer.toString(tinyReg));
