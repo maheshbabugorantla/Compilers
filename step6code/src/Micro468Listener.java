@@ -9,7 +9,6 @@ public class Micro468Listener extends MicroBaseListener {
 
 	private int blockNum;
 	private int regNum;
-	private int tinyReg;
 	private int labelNo;
 
 	private ArrayList<String> variablesList;
@@ -17,8 +16,6 @@ public class Micro468Listener extends MicroBaseListener {
 	NodesPrinter nodesPrinter; // Used to print all the IRNodes
 
 	List<TinyNode> tinyNodeArrayList = new ArrayList<TinyNode>();
-
-	HashMap<String, String> registerMap;
 
 	Stack<String> labelStack1; //= new Stack<String>();
 	Stack<String> labelStack2; //= new Stack<String>();
@@ -33,9 +30,7 @@ public class Micro468Listener extends MicroBaseListener {
 		this.blockNum = 1;
 		this.nodesPrinter = new NodesPrinter();
 		this.regNum = 0;
-		this.tinyReg = 0;
 		this.labelNo = 1;
-		this.registerMap = new HashMap<String, String>();
 		this.labelStack1 = new Stack<String>();
 		this.labelStack2 = new Stack<String>();
 		this.variablesList = new ArrayList<String>();
@@ -185,12 +180,6 @@ public class Micro468Listener extends MicroBaseListener {
 		return registerNo;
 	}
 
-	public String getTinyRegister() {
-		String registerNo = new String("r" + tinyReg);
-		tinyReg += 1;
-		return registerNo;
-	}
-
 	public String getLabel() {
 		String LabelNo = new String("label" + labelNo);
 		labelNo += 1;
@@ -227,39 +216,6 @@ public class Micro468Listener extends MicroBaseListener {
 			}
 		}
 		return "ERROR"; // invalid operator
-	}
-
-	public String tinyOpCodeCheck(String Operation) {
-
-		switch (Operation) {
-
-		case "ADDI":
-			return "addi";
-
-		case "ADDF":
-			return "addr";
-
-		case "SUBI":
-			return "subi";
-
-		case "SUBF":
-			return "subr";
-
-		case "MULTI":
-			return "muli";
-
-		case "MULTF":
-			return "mulr";
-
-		case "DIVI":
-			return "divi";
-
-		case "DIVF":
-			return "divr";
-
-		default:
-			return "ERROR";
-		}
 	}
 
 	public String checkStore(String Type) {
@@ -319,9 +275,7 @@ public class Micro468Listener extends MicroBaseListener {
 	@Override
 	public void exitPgm_body(MicroParser.Pgm_bodyContext ctx) {
 		nodesPrinter.printIRNodes();
-		//System.out.println("Exited Printing IR Nodes");
-		convertIRtoTiny(nodesPrinter.getIRNodeList());
-		//System.out.println("Done Converting IR to Tiny");
+		TinyNode.convertIRtoTiny(nodesPrinter.getIRNodeList(),symbolsTree,variablesList,tinyNodeArrayList);
 		TinyNode.printTinyList(tinyNodeArrayList);
 	}
 
@@ -653,8 +607,6 @@ public class Micro468Listener extends MicroBaseListener {
 			return;
 		}
 
-		//exit_init = 1;
-
 		String[] ids = ctx.getChild(2).getText().split(",");
 
 		for (String id : ids) {
@@ -683,8 +635,6 @@ public class Micro468Listener extends MicroBaseListener {
 		if (ctx.getChild(2) == null || ctx.getChild(2).getText().equals("")) {
 			return;
 		}
-
-		//exit_init = 1;
 
 		String[] ids = ctx.getChild(2).getText().split(",");
 
@@ -727,13 +677,9 @@ public class Micro468Listener extends MicroBaseListener {
 			flag_int = 1;
 
 			String regStore = getRegister();
-			//String tinyReg = getTinyRegister();
 
 			nodesPrinter.addIRNode(new IRNode(checkStore(symbolsTree.getParentScope().checkDataType(store)), expr, regStore));
 			nodesPrinter.addIRNode(new IRNode(checkStore(symbolsTree.getParentScope().checkDataType(store)), regStore, store));
-
-			//tinyNodeArrayList.add(new TinyNode("move", expr, tinyReg));
-			//tinyNodeArrayList.add(new TinyNode("move", tinyReg, store));
 
 		} catch (NumberFormatException e) {
 
@@ -747,16 +693,9 @@ public class Micro468Listener extends MicroBaseListener {
 
 				nodesPrinter.addIRNode(new IRNode(checkStore(symbolsTree.getParentScope().checkDataType(store)), expr, regStore));
 				nodesPrinter.addIRNode(new IRNode(checkStore(symbolsTree.getParentScope().checkDataType(store)), regStore, store));
-
-				/*if(exit_init == 0)
-				{
-					String tinyReg = getTinyRegister();
-					tinyNodeArrayList.add(new TinyNode("move", expr, tinyReg));
-					tinyNodeArrayList.add(new TinyNode("move", tinyReg, store));
-				} */
 			}
 		} catch (NumberFormatException e) {
-			//exit_init = 1;
+
 			String postFixExpr = infix_to_Postfix(expr);
 
 			String FinalRegister = parsePostfixExpr(postFixExpr, type);
@@ -847,209 +786,6 @@ public class Micro468Listener extends MicroBaseListener {
 		}
 	}
 
-	public List<TinyNode> convertIRtoTiny(List<IRNode> irNodeList) {
-
-		//System.out.println(irNodeList.size());
-
-		//System.out.println("Priting Variables");
-
-		/*for(int index = 0; index < variablesList.size(); index++) {
-			System.out.println(variablesList.get(index));
-		} */
-
-		for (IRNode irNode : irNodeList) {
-
-			if (irNode.OpCode.equals("ADDI") || irNode.OpCode.equals("SUBI") || irNode.OpCode.equals("MULTI") || irNode.OpCode.equals("DIVI") || irNode.OpCode.equals("ADDF") || irNode.OpCode.equals("SUBF") || irNode.OpCode.equals("MULTF") || irNode.OpCode.equals("DIVF")) {
-
-				entered_Expr = 1;
-				if (irNode.Fst_Op.contains("$") && irNode.Sec_Op.contains("$")) {
-					tinyNodeArrayList.add(new TinyNode(tinyOpCodeCheck(irNode.OpCode), registerMap.get(irNode.Sec_Op), registerMap.get(irNode.Fst_Op)));
-					registerMap.put(irNode.Result, registerMap.get(irNode.Fst_Op));
-				} else if (irNode.Fst_Op.contains("$")) {
-					tinyNodeArrayList.add(new TinyNode(tinyOpCodeCheck(irNode.OpCode), irNode.Sec_Op, registerMap.get(irNode.Fst_Op)));
-					registerMap.put(irNode.Result, registerMap.get(irNode.Fst_Op));
-				} else if (irNode.Sec_Op.contains("$")) {
-
-					tinyNodeArrayList.add(new TinyNode("move", irNode.Fst_Op, "r" + Integer.toString(tinyReg)));
-					registerMap.put(irNode.Fst_Op, "r" + Integer.toString(tinyReg));
-					tinyReg += 1;
-					tinyNodeArrayList.add(new TinyNode(tinyOpCodeCheck(irNode.OpCode), registerMap.get(irNode.Sec_Op), registerMap.get(irNode.Fst_Op)));
-					registerMap.put(irNode.Result, registerMap.get(irNode.Fst_Op));
-				} else {
-					tinyNodeArrayList.add(new TinyNode("move", irNode.Fst_Op, "r" + Integer.toString(tinyReg)));
-					registerMap.put(irNode.Result, "r" + Integer.toString(tinyReg));
-					tinyNodeArrayList.add(new TinyNode(tinyOpCodeCheck(irNode.OpCode), irNode.Sec_Op, "r" + Integer.toString(tinyReg)));
-					tinyReg += 1;
-				}
-			} else if (irNode.OpCode.equals("WRITEF") || irNode.OpCode.equals("WRITEI")) {
-				if (irNode.OpCode.equals("WRITEF")) {
-					tinyNodeArrayList.add(new TinyNode("sys writer", irNode.Result));
-				} else {
-					tinyNodeArrayList.add(new TinyNode("sys writei", irNode.Result));
-				}
-			}
-			
-			else if (irNode.OpCode.equals("READF") || irNode.OpCode.equals("READI")) {
-				if (irNode.OpCode.equals("READF")) {
-					tinyNodeArrayList.add(new TinyNode("sys readr", irNode.Result));
-				} else {
-					tinyNodeArrayList.add(new TinyNode("sys readi", irNode.Result));
-				}
-			}
-			else if(irNode.OpCode.equals("STOREI") || irNode.OpCode.equals("STOREF")) {
-				//System.out.println("Inside STORE");
-				//System.out.println("Entered Condition: " + Integer.toString(entered_Cond));
-				//System.out.println("Entered Expr: " + Integer.toString(entered_Expr));
-
-				//				if(entered_Expr == 1) {
-
-				//System.out.println(irNode.toString());
-
-				if(irNode.Fst_Op.contains("$")) {
-					//System.out.println("Inside $ Variable");
-					tinyNodeArrayList.add(new TinyNode("move", registerMap.get(irNode.Fst_Op), irNode.Result));
-					//registerMap.put(irNode.Result, getTinyRegister());
-				}
-
-				else{
-
-					if(variablesList.contains(irNode.Fst_Op)){
-						//System.out.println("Inside 2 variables");						
-						String tinyRegister = "r" + Integer.toString(tinyReg);
-						tinyNodeArrayList.add(new TinyNode("move", irNode.Fst_Op, tinyRegister));
-						tinyReg += 1;
-						tinyNodeArrayList.add(new TinyNode("move", tinyRegister, irNode.Result));
-						//registerMap.put(irNode.Result, getTinyRegister());
-					}	//tinyReg += 1;
-
-					else {
-						//System.out.println("Inside not 2 variables");
-						//System.out.println(irNode.);
-						tinyNodeArrayList.add(new TinyNode("move", irNode.Fst_Op, "r" + Integer.toString(tinyReg)));
-						registerMap.put(irNode.Result, getTinyRegister());
-					}
-				}
-			}
-
-			else if(irNode.OpCode.equals("JUMP")) {
-				tinyNodeArrayList.add(new TinyNode("jmp",irNode.Result));
-			}
-
-			else if(irNode.OpCode.equals("LABEL")) {
-				tinyNodeArrayList.add(new TinyNode("label",irNode.Result));
-			}
-
-			else if(irNode.OpCode.equals("GE")) {
-				if(symbolsTree.getParentScope().checkDataType(irNode.Fst_Op).equals("INT")) {
-
-					if(variablesList.contains(irNode.Sec_Op)) {
-						String TinyRegister = getTinyRegister();
-						tinyNodeArrayList.add(new TinyNode("move", irNode.Sec_Op,TinyRegister));
-						tinyNodeArrayList.add(new TinyNode("cmpi",irNode.Fst_Op,TinyRegister));
-					}
-					else {
-					tinyNodeArrayList.add(new TinyNode("cmpi",irNode.Fst_Op,registerMap.get(irNode.Sec_Op)));
-					}
-				}
-
-				else if(symbolsTree.getParentScope().checkDataType(irNode.Fst_Op).equals("FLOAT")) {
-					
-					if(variablesList.contains(irNode.Sec_Op)) {
-						String TinyRegister = getTinyRegister();
-						tinyNodeArrayList.add(new TinyNode("move", irNode.Sec_Op,TinyRegister));
-						tinyNodeArrayList.add(new TinyNode("cmpr",irNode.Fst_Op,TinyRegister));
-					}
-					else {
-					tinyNodeArrayList.add(new TinyNode("cmpr",irNode.Fst_Op,registerMap.get(irNode.Sec_Op)));
-					}
-				}
-
-				tinyNodeArrayList.add(new TinyNode("jge",irNode.Result));
-			}
-
-			else if(irNode.OpCode.equals("GT")) {
-				if(symbolsTree.getParentScope().checkDataType(irNode.Fst_Op).equals("INT")) {
-					tinyNodeArrayList.add(new TinyNode("cmpi",irNode.Fst_Op,registerMap.get(irNode.Sec_Op)));
-				}
-
-				else if(symbolsTree.getParentScope().checkDataType(irNode.Fst_Op).equals("FLOAT")) {
-					tinyNodeArrayList.add(new TinyNode("cmpr",irNode.Fst_Op,registerMap.get(irNode.Sec_Op)));
-				}
-
-				tinyNodeArrayList.add(new TinyNode("jgt",irNode.Result));
-			}
-
-			else if(irNode.OpCode.equals("LE")) {
-				if(symbolsTree.getParentScope().checkDataType(irNode.Fst_Op).equals("INT")) {
-					tinyNodeArrayList.add(new TinyNode("cmpi",irNode.Fst_Op,registerMap.get(irNode.Sec_Op)));
-				}
-
-				else if(symbolsTree.getParentScope().checkDataType(irNode.Fst_Op).equals("FLOAT")) {
-					tinyNodeArrayList.add(new TinyNode("cmpr",irNode.Fst_Op,registerMap.get(irNode.Sec_Op)));
-				}
-
-				tinyNodeArrayList.add(new TinyNode("jle",irNode.Result));				
-			} 
-
-			else if(irNode.OpCode.equals("LT")) {
-				if(symbolsTree.getParentScope().checkDataType(irNode.Fst_Op).equals("INT")) {
-					tinyNodeArrayList.add(new TinyNode("cmpi",irNode.Fst_Op,registerMap.get(irNode.Sec_Op)));
-				}
-
-				else if(symbolsTree.getParentScope().checkDataType(irNode.Fst_Op).equals("FLOAT")) {
-					tinyNodeArrayList.add(new TinyNode("cmpr",irNode.Fst_Op,registerMap.get(irNode.Sec_Op)));
-				}
-
-				tinyNodeArrayList.add(new TinyNode("jlt",irNode.Result));				
-			}
-
-			else if(irNode.OpCode.equals("EQ")) {
-			
-				if(irNode.Fst_Op.contains("$")) {
-					tinyNodeArrayList.add(new TinyNode("cmpi",registerMap.get(irNode.Fst_Op),registerMap.get(irNode.Sec_Op)));
-				}
-			
-			else {
-				if(symbolsTree.getParentScope().checkDataType(irNode.Fst_Op).equals("INT")) {
-					tinyNodeArrayList.add(new TinyNode("cmpi",irNode.Fst_Op,registerMap.get(irNode.Sec_Op)));
-				}
-
-				else if(symbolsTree.getParentScope().checkDataType(irNode.Fst_Op).equals("FLOAT")) {
-					tinyNodeArrayList.add(new TinyNode("cmpr",irNode.Fst_Op,registerMap.get(irNode.Sec_Op)));
-				}
-
-				tinyNodeArrayList.add(new TinyNode("jeq",irNode.Result));
-			} 
-			}
-
-			else if(irNode.OpCode.equals("NE")) {
-				//System.out.println("Inside NE");
-
-				// Check if the two operands are registers
-
-				if(irNode.Fst_Op.contains("$")) {
-					tinyNodeArrayList.add(new TinyNode("cmpi",registerMap.get(irNode.Fst_Op),registerMap.get(irNode.Sec_Op)));
-				}
-
-				else { 
-					if(symbolsTree.getParentScope().checkDataType(irNode.Fst_Op).equals("INT")) {
-					tinyNodeArrayList.add(new TinyNode("cmpi",irNode.Fst_Op,registerMap.get(irNode.Sec_Op)));
-				}
-
-				else if(symbolsTree.getParentScope().checkDataType(irNode.Fst_Op).equals("FLOAT")) {
-					tinyNodeArrayList.add(new TinyNode("cmpr",irNode.Fst_Op,registerMap.get(irNode.Sec_Op)));
-				}
-
-				}
-				tinyNodeArrayList.add(new TinyNode("jne",irNode.Result));
-				//System.out.println("Exit NE");
-			} 
-			}
-
-			return tinyNodeArrayList;
-		}
-	//}
-
 	// Used to add IRNodes to IRNodeList and print the IR Instructions
 	class NodesPrinter {
 
@@ -1079,158 +815,6 @@ public class Micro468Listener extends MicroBaseListener {
 
 		public ArrayList<IRNode> getIRNodeList() {
 			return IRNodeList;
-		}
-	}
-
-	// For Testing purposes.
-	class in_to_post {
-
-		/*public static void main(String[] args) {
-        String infix_Str = "c + a*b + (a*b+c)/a + 20;";
-        //   String infix_Str = "(b*a)/a";
-        String postFixStr = infix_to_Postfix(infix_Str);
-
-        int count = 0;
-
-        for(int index = 0; index < postFixStr.length(); index++) {
-            if(postFixStr.charAt(index) == ' ') {
-                count += 1;
-            }
-        }
-
-        System.out.println(count);
-
-        System.out.println(postFixStr);
-        InOrderTraversal(parsePostfixExpr(postFixStr.trim()));
-        return;
-    } */
-
-		public String infix_to_Postfix(String infix_Str) {
-
-			infix_Str = infix_Str.split(";")[0];
-			infix_Str = infix_Str.replaceAll("[\\s]", "");
-			String[] elements = infix_Str.split("(?<=[-+*/()])|(?=[-+*/()])");
-
-			/*        for(int index = 0; index < elements.length; index++) {
-            System.out.println(elements[index]);
-        } */
-
-			StringBuilder output_Str = new StringBuilder(); // This Stores the PostFix Conversion String
-
-			Stack<String> opStack = new Stack<String>(); // This Stack is used to store the Operators
-
-			HashMap<String, Integer> opPrecedence = new HashMap<String, Integer>(); // This HashMap Stores the Operator Precedence
-
-			opPrecedence.put("+", 1);
-			opPrecedence.put("-", 1);
-			opPrecedence.put("*", 2);
-			opPrecedence.put("/", 2);
-
-			// Traversing through all the symbols
-			for (int index = 0; index < elements.length; index++) {
-				//    System.out.println(elements[index]);
-				if (elements[index].equals("+") || elements[index].equals("-") || elements[index].equals("*") || elements[index].equals("/") || elements[index].equals("(") || elements[index].equals(")")) {
-					//System.out.println("Inside Main If");
-					if (elements[index].equals(")")) {
-
-						//                System.out.println("Found )");
-
-						while (opStack.peek() != "(") {
-							String popped_op = opStack.pop();
-							//                        System.out.println("Popping " + popped_op);
-							output_Str.append(popped_op + " ");
-						}
-
-						opStack.pop();
-					} else if (elements[index].equals("(")) {
-						//                System.out.println("Pushing ( on to Stack");
-						opStack.push("(");
-					} else {
-
-						int currentPrecedence = 3;
-
-						if (opPrecedence.containsKey(elements[index])) {
-							currentPrecedence = opPrecedence.get(elements[index]);
-						}
-
-						while (!opStack.empty() && opPrecedence.get(opStack.peek()) != null && currentPrecedence <= opPrecedence.get(opStack.peek())) {
-							String popped_op = opStack.pop();
-							//                      System.out.println("Popped " + " " + popped_op);
-							output_Str.append(popped_op + " ");
-						}
-
-						//                    System.out.println("Pushing " + elements[index] + " onto stack");
-						opStack.push(elements[index].toString());
-					}
-				} else {
-					output_Str.append(elements[index] + " ");
-				}
-			}
-
-			// Emptying the Operator Stack when we run out of Operands
-			while (!opStack.empty()) {
-				output_Str.append(opStack.pop() + " ");
-			}
-
-			return output_Str.toString();
-		}
-
-		public BSTNode parsePostfixExpr(String postFix_Expr) {
-
-			Stack<BSTNode> bstNodeStack = new Stack<BSTNode>();
-
-			//        String[] elements = postFix_Expr.split("(?<=[-+*/])|(?=[-+*/])");
-
-			String[] elements = postFix_Expr.split(" ");
-
-			for (int index = 0; index < elements.length; index++) {
-
-				if (elements[index].equals("+") || elements[index].equals("-") || elements[index].equals("*") || elements[index].equals("/")) {
-
-					// Popping the Two Nodes
-					BSTNode Node1 = bstNodeStack.pop();
-					BSTNode Node2 = bstNodeStack.pop();
-
-					//System.out.println("Left: " + Node2);
-					//System.out.println("Right: " + Node1);
-					BSTNode opNode = new BSTNode(elements[index]);
-					opNode.left = Node2; // Push the last Popped Node onto the Left Side of the Expression Tree
-					opNode.right = Node1; // Push the first popped Node onto the Right Side of the Expression Tree
-
-					bstNodeStack.push(opNode); // Pushing new Expression Tree onto the Stack
-				} else {
-					//System.out.println("Pushing " + elements[index]);
-					bstNodeStack.push(new BSTNode(elements[index])); // Pushing the Variable Names or Numbers to the Stack
-				}
-			}
-
-			return bstNodeStack.pop();
-		}
-
-		public void InOrderTraversal(BSTNode bstNodeTree) {
-
-			if (bstNodeTree != null) {
-				InOrderTraversal(bstNodeTree.left);
-				System.out.println(bstNodeTree.data);
-				InOrderTraversal(bstNodeTree.right);
-
-			}
-
-			return;
-		}
-
-
-		private class BSTNode {
-
-			String data; // Used to Store the data or variable names
-			BSTNode left; // Left Pointer
-			BSTNode right; // Right Pointer
-
-			public BSTNode(String data) {
-				this.data = data;
-				this.left = null;
-				this.right = null;
-			}
 		}
 	}
 	}
