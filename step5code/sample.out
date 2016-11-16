@@ -1,0 +1,54 @@
+;IR code
+;STOREF 0.0001 $T1
+;STOREF $T1 tolerance
+;STOREF 7.0 $T2
+;STOREF $T2 num
+;STOREF num approx
+;STOREI 0 $T3
+;STOREI $T3 count
+;STOREF 0.0 $T4
+;STOREF $T4 diff
+;STOREI 0 $T5
+;STOREI $T5 enough
+;LABEL label1
+;STOREI 1 $T6
+;ADDI count $T6 $T7
+;STOREI $T7 count
+;STOREF 0.5 $T8
+;DIVF num approx $T9
+;ADDF approx $T9 $T10
+;MULTF $T8 $T10 $T11
+;STOREF $T11 newapprox
+;SUBF approx newapprox $T12
+;STOREF $T12 diff
+;STOREF 0.0 $T13
+;LE diff $T13 label3
+;GE diff tolerance label5
+;STOREI 1 $T14
+;STOREI $T14 enough
+;JUMP label6
+;LABEL label5
+;LABEL label6
+;JUMP label4
+;LABEL label3
+;STOREI 1 $T15
+;STOREI 1 $T16
+;NE $T15 $T16 label7
+;STOREF 0.0 $T17
+;SUBF $T17 tolerance $T18
+;LE diff $T18 label8
+;STOREI 1 $T19
+;STOREI $T19 enough
+;JUMP label9
+;LABEL label8
+;LABEL label9
+;JUMP label4
+;LABEL label7
+;LABEL label4
+;STOREF newapprox approx
+;STOREI 1 $T20
+;EQ enough $T20 label2
+;JUMP label1
+;LABEL label2
+;WRITEF approx
+;WRITEI count

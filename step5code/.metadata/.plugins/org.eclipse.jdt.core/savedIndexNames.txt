@@ -1,0 +1,15 @@
+INDEX VERSION 1.126+/home/yara/ee364/ee364g01/Desktop/Compilers/Compilers-master/step5code/.metadata/.plugins/org.eclipse.jdt.core
+2845516931.index
+3789317289.index
+3336643956.index
+1973235070.index
+2286305910.index
+1865453564.index
+3708989133.index
+781685417.index
+2428745204.index
+587692549.index
+3994797267.index
+353461544.index
+1020462124.index
+74018198.index
