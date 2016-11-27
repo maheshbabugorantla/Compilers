@@ -1,6 +1,4 @@
 
-
-
 public class IRNode {
 
     String OpCode; // OpCode
@@ -17,7 +15,7 @@ public class IRNode {
         this.Result = result;
     }
 
-    // When there are no operands For example for JUMP, LABEL, READI, READF, WRITEI, WRITEF
+    // When there are no operands For example for JUMP, LABEL, READI, READF, WRITEI, WRITEF, JSR
     public IRNode(String opcode, String result){
 
         this.OpCode = opcode;
@@ -35,18 +33,31 @@ public class IRNode {
         this.Result = result;
     }
 
+    // for LINK, RET
+    public IRNode(String opCode) {
+        this.OpCode = opCode;
+        this.Fst_Op = null;
+        this.Sec_Op = null;
+        this.Result = null;
+    }
+
     @Override
     public String toString() {
 
         String semi_colon = ";";
 
+        if(Result == null) {
+           return (semi_colon + OpCode);
+        }
+
         // JUMP, LABEL, READI, READF, WRITEI, WRITEF
-        if(Sec_Op == null && Fst_Op == null) {
+        else if(Sec_Op == null && Fst_Op == null) {
             return (semi_colon + OpCode + " " + Result);
         }
         else if(Sec_Op == null) { // For STOREI and STOREF
             return (semi_colon + OpCode + " " + Fst_Op + " " + Result);
         }
+
         else {
             return (semi_colon + OpCode + " " + Fst_Op + " " + Sec_Op + " " + Result);
         }

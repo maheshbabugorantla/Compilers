@@ -1,3 +1,4 @@
+
 import java.util.ArrayList;
 import java.util.HashSet;
 
@@ -7,7 +8,7 @@ class SymbolsTable {
 	// All the below variables will be retrieved using get and set methods
 	private String scopeName; // This stored the name of the scope such as "Global" or "Local Scope No."
 	private SymbolsTable parent_global; // This the "Global" Scope or Parent
-	private ArrayList<SymbolsTable> child; // List of local scopes
+	private ArrayList<SymbolsTable> child; // List of local scopes or functions
 	private ArrayList<Symbols> table; // This will store all the symbols
 	private HashSet<String> hashSet; // This is used to search for existing symbols in O(1) time
 
@@ -86,6 +87,7 @@ class SymbolsTable {
 	// This prints the SymbolsTable for the currentScope and all its children
 	public void printSymTable() {
 
+		System.out.println("");
 		System.out.println("Symbol table " + scopeName);
 
 		for (Symbols symbol : table) {

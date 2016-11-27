@@ -1,3 +1,4 @@
+
 import java.util.ArrayList;
 
 /* This is used to Co-Ordinate between different Scopes in the program */
@@ -48,6 +49,7 @@ import java.util.ArrayList;
 		return allSymbols;
 	}
 
+	// Try Removing this later. This function is pretty Redundant
 	public String checkDataType(String dataVal) {
 
 		try {
@@ -66,16 +68,30 @@ import java.util.ArrayList;
 		catch (NumberFormatException e) {
 		}
 
-		SymbolsTable symbolsTableScope = currentScope;
 
-		while(symbolsTableScope != null) {
+		SymbolsTable symbolsTableScope = parentScope;
 
+		if(symbolsTableScope != null) {
+
+            // This Checks only for the Global Scope
 			if(symbolsTableScope.checkDataType(dataVal) != null) {
 				return symbolsTableScope.checkDataType(dataVal);
 			}
 
-			symbolsTableScope = symbolsTableScope.getParentScope();
+/*			else {
+
+                for(SymbolsTable symbolsTable: symbolsTableScope.getChildren()) {
+
+                    String type = symbolsTable.checkDataType(dataVal);
+
+                    if( type != null) {
+                        return type
+                    }
+                }
+
+            } */
 		}
+
 
 		return null;
 	}

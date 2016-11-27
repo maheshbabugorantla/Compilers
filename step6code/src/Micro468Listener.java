@@ -1,3 +1,4 @@
+
 import java.util.*;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
@@ -13,17 +14,20 @@ public class Micro468Listener extends MicroBaseListener {
 
 	private ArrayList<String> variablesList;
 
+	HashMap<String, SymbolsTable> symbolsTableMap;
+
+	String currentFuncName;
+
 	NodesPrinter nodesPrinter; // Used to print all the IRNodes
 
 	List<TinyNode> tinyNodeArrayList = new ArrayList<TinyNode>();
 
-	Stack<String> labelStack1; //= new Stack<String>();
-	Stack<String> labelStack2; //= new Stack<String>();
+	Stack<String> labelStack1;
+	Stack<String> labelStack2;
 
-	int entered_Expr = 0; // Flag to check if the program has entered the expr
-	int exit_init = 0; // Flag to check if we exited initializations
+	SymbolsTable globalSymbolTable;
 
-	int entered_Cond = 0; // Flag to check if we entered conditional
+	HashMap<String, Function> functionsMap; // HashMap of all Functions
 
 	public Micro468Listener() {
 		this.symbolsTree = new SymbolsTree();
@@ -34,6 +38,12 @@ public class Micro468Listener extends MicroBaseListener {
 		this.labelStack1 = new Stack<String>();
 		this.labelStack2 = new Stack<String>();
 		this.variablesList = new ArrayList<String>();
+
+		this.functionsMap = new HashMap<String, Function>();
+
+		this.globalSymbolTable = new SymbolsTable("GLOBAL");
+
+		this.symbolsTableMap = new HashMap<String, SymbolsTable>(); // Used to find appropriate SymbolTable for each Function.
 	}
 
 	public boolean isInteger(String string) {
@@ -70,6 +80,25 @@ public class Micro468Listener extends MicroBaseListener {
 		return true;
 	}
 
+	public String inFunction(String id, String FunctionName) {
+
+		Function function = functionsMap.get(FunctionName);
+
+		String reg = function.getRegisterMap().get(id);
+
+		// Not a local Variable
+		if(reg != null) {
+			return reg;
+		}
+
+		// Checking if the variable is in the Global Scope
+		if(symbolsTree.getParentScope().checkDataType(id) != null) {
+			return id;
+		}
+
+		return null;
+	}
+
 	public void pushSymbol(String currentValue, SymbolsTable table) {
 
 		if (currentValue.startsWith("INT", 0)) {
@@ -80,6 +109,7 @@ public class Micro468Listener extends MicroBaseListener {
 			}
 		} else if (currentValue.startsWith("FLOAT", 0)) {
 			String[] float_val = currentValue.substring(5).split(",");
+			//System.out.println(float_val.length);
 			for (String str : float_val) {
 				Symbols symbol = new Symbols(str, "FLOAT");
 				table.addSymbol(symbol);
@@ -91,19 +121,43 @@ public class Micro468Listener extends MicroBaseListener {
 		}
 	}
 
-	public void functionParameters(String currentValue, SymbolsTable table) {
-		String[] intVal = currentValue.split(",");
+	public void addLocalVariables(String localVariables, Function function) {
+
+		if (localVariables.startsWith("INT", 0)) {
+			String[] intVal = localVariables.substring(3).split(",");
+			for (String str : intVal) {
+				//System.out.println(str);
+				function.addLocalVariable(str);
+			}
+		} else if (localVariables.startsWith("FLOAT", 0)) {
+			String[] float_val = localVariables.substring(5).split(",");
+			for (String str : float_val) {
+				//System.out.println(str);
+				function.addLocalVariable(str);
+			}
+		} else if (localVariables.startsWith("STRING", 0)) {
+			String[] str_val = localVariables.substring(6).split(":=");
+			function.addLocalVariable(str_val[0]);
+		}
+	}
+
+	public void functionParameters(String currentValue, SymbolsTable table, Function function) {
+        //System.out.println("Inside functionParameters");
+        String[] intVal = currentValue.split(",");
 		for (int index = 0; index < intVal.length; index++) {
+			//System.out.println("Inside For Loop");
 			if (currentValue.startsWith("INT", 0)) {
 				String str = intVal[index];
-				str = str.substring(3);
+				str = str.substring(3); // Parameter Name
 				Symbols symbol = new Symbols(str, "INT");
 				table.addSymbol(symbol);
+				function.addParameter(str);
 			} else if (currentValue.startsWith("FLOAT", 0)) {
 				String str = intVal[index];
-				str = str.substring(5);
+				str = str.substring(5); // Parameter Name
 				Symbols symbol = new Symbols(str, "FLOAT");
 				table.addSymbol(symbol);
+				function.addParameter(str);
 			}
 		}
 	}
@@ -226,10 +280,33 @@ public class Micro468Listener extends MicroBaseListener {
 		} else {
 			return "ERROR";
 		}
-
 	}
 
 	public void checkCompOp(String compOp, String operand1, String operand2) {
+
+		// Checking if the operand1 is a parameter/ local or Global Variable
+		if(!operand1.startsWith("$")) {
+			if(inFunction(operand1, currentFuncName) != null) { // Checking in the Local Scope
+				operand1 = inFunction(operand1, currentFuncName);
+			}
+			else if(symbolsTree.getParentScope().checkDataType(operand1) == null) { // Checking if not in Global Scope
+				System.out.println("ERROR ID");
+				System.out.println(operand1);
+				return;
+			}
+		}
+
+		// Checking if the 'operand2' is a parameter/ local or Global Variable
+		if(!operand2.startsWith("$")) {
+			if(inFunction(operand2, currentFuncName) != null) { // Checking in the Local Scope
+				operand2 = inFunction(operand2, currentFuncName);
+			}
+			else if(symbolsTree.getParentScope().checkDataType(operand2) == null) { // Checking if not in Global Scope
+				System.out.println("ERROR ID");
+				System.out.println(operand2);
+				return;
+			}
+		}
 
 		switch(compOp) {
 
@@ -264,37 +341,152 @@ public class Micro468Listener extends MicroBaseListener {
 	public void enterPgm_body(MicroParser.Pgm_bodyContext ctx) {
 		//System.out.println("Enter Pgm_body");
 		if (ctx.getChild(0) == null || ctx.getChild(0).getText() == "") return;
-		String[] global_vars = ctx.getChild(0).getText().split(";");
+		String[] global_vars = ctx.getChild(0).getText().split(";"); // Fetching all the Global Variables
+
+		// Adding Variables to the Symbol Table
 		for (int index = 0; index < global_vars.length; index++) {
 			String currentValue = global_vars[index];
 			pushSymbol(currentValue, symbolsTree.getParentScope());
 		}
+
+		//symbolsTree.getParentScope().printSymTable();
 	}
 
 	// Here we print the whole symbolsTree when we exit the PROGRAM
 	@Override
 	public void exitPgm_body(MicroParser.Pgm_bodyContext ctx) {
+        //System.out.println("Exit Pgm Body");
+        //symbolsTree.printWholeTree();
 		nodesPrinter.printIRNodes();
-		TinyNode.convertIRtoTiny(nodesPrinter.getIRNodeList(),symbolsTree,variablesList,tinyNodeArrayList);
-		TinyNode.printTinyList(tinyNodeArrayList);
+//		TinyNode.convertIRtoTiny(nodesPrinter.getIRNodeList(),symbolsTree,variablesList,tinyNodeArrayList);
+//		TinyNode.printTinyList(tinyNodeArrayList);
 	}
 
 	@Override
 	public void enterFunc_decl(MicroParser.Func_declContext ctx) {
 		//System.out.println("Enter Func_decl");
-		SymbolsTable table = new SymbolsTable(ctx.getChild(2).getText());
 
+		regNum = 0; // Resetting the Register Value for each Function Scope.
+
+		String retType = ctx.getChild(1).getText();
+		String FuncID = ctx.getChild(2).getText();
+
+		//System.out.println(FuncID);
+
+		currentFuncName = FuncID;
+
+		// Creating a new Symbol Table for each function
+		SymbolsTable table = new SymbolsTable(FuncID);
+
+		symbolsTableMap.put(FuncID,table); // Adding the SymbolTable to the hashMap.
+
+		Function newFunction = new Function(FuncID);
+
+		// Generating New IRNode List for each Function
+
+		//newFunction.addIRNode(new IRNode("LABEL", FuncID));
+		//newFunction.addIRNode(new IRNode("LINK"));
+		nodesPrinter.addIRNode(new IRNode("LABEL", FuncID));
+		nodesPrinter.addIRNode(new IRNode("LINK"));
 		symbolsTree.getCurrentScope().addChild(table);
 
+		// Fetching the Parameters of the Function
 		if (ctx.getChild(4) != null) {
-			functionParameters(ctx.getChild(4).getText(), table);
+            //System.out.println("Inside If 4");
+			//System.out.println(ctx.getChild(4).getText());
+            functionParameters(ctx.getChild(4).getText(), table, newFunction);
 		}
 
+		// Fetching the Local Variables of the Function
 		if (ctx.getChild(7) != null && ctx.getChild(7).getChild(0) != null) {
+
+//			System.out.println("Inside If 7");
 			String str = ctx.getChild(7).getChild(0).getText();
-			if (str.length() == 0) return;
-			pushSymbol(str.substring(0, str.length() - 1), table);
+
+			// This below line is more useful to parse variables when it is like
+			// FLOAT a,b,c;
+			// FLOAT addresult,multiplyresult;
+			String[] VarLines = str.split(";");
+
+			for(String line: VarLines) {
+
+				//System.out.println(line);
+				if (line.length() == 0) return;
+
+				// Adding localVariables to the functions SymbolTable
+				pushSymbol(line, table);
+				addLocalVariables(line, newFunction);
+			}
 		}
+
+		newFunction.setSymbolsTable(table); // Setting an Individual Symbol Table for each Function
+
+		//newFunction.printFunction();
+		functionsMap.put(newFunction.getFunctionName(), newFunction);
+
+		//table.printSymTable();
+	}
+
+/*	@Override
+	public void exitFunc_decl(MicroParser.Func_declContext ctx) {
+		//newFunction.addIRNode(new IRNode("RET"));
+		nodesPrinter.addIRNode(new IRNode("RET"));
+	} */
+
+	@Override public void enterReturn_stmt(MicroParser.Return_stmtContext ctx) {
+
+		int integer_flag = 0;
+
+		String returnVariable = ctx.getChild(1).getText();
+
+		// DataType of the Return Variable
+		Function newFunction = functionsMap.get(currentFuncName);
+
+		//System.out.println(returnVariable);
+
+		try{
+			Integer.parseInt(returnVariable);
+
+			String register = getRegister();
+
+			//newFunction.addIRNode(new IRNode(checkStore("INT"),returnVariable,register)));
+			//newFunction.addIRNode(new IRNode(checkStore("INT"),register,"$R")))
+
+			nodesPrinter.addIRNode(new IRNode(checkStore("INT"),returnVariable, register));
+			nodesPrinter.addIRNode(new IRNode(checkStore("INT"),register,"$R"));
+
+			integer_flag = 1;
+		}
+		catch (NumberFormatException e) {
+		}
+
+		try {
+
+			if(integer_flag == 0){
+				Float.parseFloat(returnVariable);
+
+				String register = getRegister();
+
+				//newFunction.addIRNode(new IRNode(checkStore("INT"),returnVariable, register));
+				//newFunction.addIRNode(new IRNode(checkStore("INT"),register,"$R"));
+				nodesPrinter.addIRNode(new IRNode(checkStore("INT"),returnVariable, register));
+				nodesPrinter.addIRNode(new IRNode(checkStore("INT"),register,"$R"));
+			}
+		}
+		catch (NumberFormatException e) {
+
+			SymbolsTable symbolsTable = newFunction.getFuncSymbols();
+
+			String retType = symbolsTable.checkDataType(returnVariable);
+
+			String register = inFunction(returnVariable, currentFuncName);
+
+			//newFunction.addIRNode(new IRNode("RET"));
+			nodesPrinter.addIRNode(new IRNode(checkStore(retType),register,"$R"));
+		}
+
+		//newFunction.addIRNode(new IRNode("RET"));
+		nodesPrinter.addIRNode(new IRNode("RET"));
 	}
 
 	@Override
@@ -339,7 +531,6 @@ public class Micro468Listener extends MicroBaseListener {
 			}
 
 			if(isInteger(RightOp) || isFloat(RightOp)) {
-				entered_Cond = 1;
 				String newRegister = getRegister();
 
 				// Checking to see if the Right Hand Side of the If Statement Expression is an integer or Float
@@ -448,10 +639,6 @@ public class Micro468Listener extends MicroBaseListener {
 			//System.out.println("Blah Blah Blah Blah" + Integer.toString(rightChild));
 			//System.out.println("Comp Operator " + compOp);
 
-			/*			if(rightChild == 1) {
-
-			} */
-
 			if(rightChild == 3) {
 				System.out.println(ctx.getChild(2).getChild(2).getChild(1).getText());
 			}
@@ -547,14 +734,9 @@ public class Micro468Listener extends MicroBaseListener {
 
 		//System.out.println("After for Loop");
 
-
-		/*		if(childrenCount == 1) {
-
-		} */
-
-		/*		String LeftOp = "";
-		String CompOp = "";
-		String RightOp = ""; */
+		// String LeftOp = "";
+		// String CompOp = "";
+		// String RightOp = "";
 
 	}
 
@@ -601,7 +783,7 @@ public class Micro468Listener extends MicroBaseListener {
 	@Override
 	public void enterWrite_stmt(MicroParser.Write_stmtContext ctx) {
 
-		//System.out.println("Enter Write_stmt");
+		//System.out.println("Enter WRITE");
 
 		if (ctx.getChild(2) == null || ctx.getChild(2).getText().equals("")) {
 			return;
@@ -609,28 +791,54 @@ public class Micro468Listener extends MicroBaseListener {
 
 		String[] ids = ctx.getChild(2).getText().split(",");
 
+		Function newFunction = functionsMap.get(currentFuncName);
+
 		for (String id : ids) {
-			String type = symbolsTree.getParentScope().checkDataType(id);
+
+			// First Check if it is available in the Local Scope
+			// Else check in the Global Scope.
+			String type = symbolsTableMap.get(currentFuncName).checkDataType(id);
+
+			if(type == null) {
+				type = symbolsTree.getParentScope().checkDataType(id);
+			}
+
+//			System.out.println(id);
 
 			// The Input Symbol is not present in the SymbolTable
 			if (type == null) {
+				System.out.println(id);
 				System.out.println("ERROR ID");
 				return;
+			}
+
+
+			// Fetch the Registers
+			if(inFunction(id, currentFuncName) != null) {
+				id = inFunction(id, currentFuncName);
 			}
 
 			if (type.equals("INT")) {
 				IRNode irNodeI = new IRNode("WRITEI", id);
 				nodesPrinter.addIRNode(irNodeI);
+				newFunction.addIRNode(irNodeI);
 			} else if (type.equals("FLOAT")) {
 				IRNode irNodeF = new IRNode("WRITEF", id);
 				nodesPrinter.addIRNode(irNodeF);
+				newFunction.addIRNode(irNodeF);
+			}
+
+			else if(type.equals("STRING")) {
+				IRNode irNodeS = new IRNode("WRITES", id);
+				nodesPrinter.addIRNode(irNodeS);
+				newFunction.addIRNode(irNodeS);
 			}
 		}
 	}
 
 	@Override public void enterRead_stmt(MicroParser.Read_stmtContext ctx){
 
-		//System.out.println("Enter Write_stmt");
+		//System.out.println("Enter READ");
 
 		if (ctx.getChild(2) == null || ctx.getChild(2).getText().equals("")) {
 			return;
@@ -639,12 +847,27 @@ public class Micro468Listener extends MicroBaseListener {
 		String[] ids = ctx.getChild(2).getText().split(",");
 
 		for (String id : ids) {
-			String type = symbolsTree.getParentScope().checkDataType(id);
+
+			//String type = symbolsTree.checkDataType(id);
+
+			// First Check if it is available in the Local Scope
+			// Else check in the Global Scope.
+			String type = symbolsTableMap.get(currentFuncName).checkDataType(id);
+
+			if(type == null) {
+				type = symbolsTree.getParentScope().checkDataType(id);
+			}
 
 			// The Input Symbol is not present in the SymbolTable
 			if (type == null) {
+				System.out.println(id);
 				System.out.println("ERROR ID");
 				return;
+			}
+
+			// Fetch the Registers
+			if(inFunction(id, currentFuncName) != null) {
+				id = inFunction(id, currentFuncName);
 			}
 
 			if (type.equals("INT")) {
@@ -660,26 +883,39 @@ public class Micro468Listener extends MicroBaseListener {
 	@Override
 	public void enterAssign_expr(MicroParser.Assign_exprContext ctx) {
 
-		//		System.out.println("Enter Assign_expr");
+		//System.out.println("Enter Assign_expr");
 
 		String result = ctx.getChild(0).getText();
 
-		String type = symbolsTree.getParentScope().checkDataType(result);
-
+		// Checking if the Variable is already present in the localScope of the Function
+		String type = null;
 		String expr = ctx.getText().split(":=")[1].trim();
 		String store = ctx.getText().split(":=")[0].trim();
+
+		SymbolsTable symbolsTable = symbolsTableMap.get(currentFuncName);
+		type = symbolsTable.checkDataType(store);
+
+		// Check for its existence in the Global Scope if not in the Local Scope
+		if(type == null) {
+			type =  symbolsTree.getParentScope().checkDataType(store);
+		}
+
+		//System.out.println("Store "+ store);
+		//System.out.println("Expr " + expr);
+
+		//System.out.println("After init");
 
 		int flag_int = 0;
 
 		try {
-			Integer.parseInt(expr);
+			Integer.parseInt(expr); // Checking if the RHS is an integer e.g: a = 2;
 
 			flag_int = 1;
 
 			String regStore = getRegister();
 
-			nodesPrinter.addIRNode(new IRNode(checkStore(symbolsTree.getParentScope().checkDataType(store)), expr, regStore));
-			nodesPrinter.addIRNode(new IRNode(checkStore(symbolsTree.getParentScope().checkDataType(store)), regStore, store));
+			nodesPrinter.addIRNode(new IRNode(checkStore(type), expr, regStore));
+			nodesPrinter.addIRNode(new IRNode(checkStore(type), regStore, store));
 
 		} catch (NumberFormatException e) {
 
@@ -688,22 +924,41 @@ public class Micro468Listener extends MicroBaseListener {
 		try {
 			if (flag_int == 0) {
 
-				Float.parseFloat(expr);
+				Float.parseFloat(expr); // Checking if the RHS is a float e.g: a = 1.0;
 				String regStore = getRegister();
 
-				nodesPrinter.addIRNode(new IRNode(checkStore(symbolsTree.getParentScope().checkDataType(store)), expr, regStore));
-				nodesPrinter.addIRNode(new IRNode(checkStore(symbolsTree.getParentScope().checkDataType(store)), regStore, store));
+				nodesPrinter.addIRNode(new IRNode(checkStore(type), expr, regStore));
+				nodesPrinter.addIRNode(new IRNode(checkStore(type), regStore, store));
 			}
 		} catch (NumberFormatException e) {
 
 			String postFixExpr = infix_to_Postfix(expr);
-
+			//System.out.println(postFixExpr);
+			//System.out.println("After infix_to_Postfix");
 			String FinalRegister = parsePostfixExpr(postFixExpr, type);
-			nodesPrinter.addIRNode(new IRNode(checkStore(type), FinalRegister, result));
+			//System.out.println("After ParsePostFix");
+
+			// Checking Local Scope
+			if(inFunction(result,currentFuncName) != null) {
+				result = inFunction(result, currentFuncName);
+				nodesPrinter.addIRNode(new IRNode(checkStore(type), FinalRegister, result));
+				//functionsMap.get(currentFuncName).addIRNode(new IRNode(checkStore(type), FinalRegister, result)); // Adding IRNode to the respective Function
+				return;
+			}
+
+			// Checking in Global Scope
+			if(symbolsTree.getParentScope().checkDataType(result) != null) {
+				nodesPrinter.addIRNode(new IRNode(checkStore(type), FinalRegister, result));
+				//functionsMap.get(currentFuncName).addIRNode(new IRNode(checkStore(type), FinalRegister, result));
+				return;
+			}
+//			nodesPrinter.addIRNode(new IRNode(checkStore(type), FinalRegister, result));
 		}
 	}
 
 	public String parsePostfixExpr(String postFix_Expr, String type) {
+
+		//System.out.println("DataType: " + type);
 
 		Stack<String> RegisterStack = new Stack<String>();
 
@@ -711,30 +966,66 @@ public class Micro468Listener extends MicroBaseListener {
 
 		for (int index = 0; index < elements.length; index++) {
 
+			//System.out.println(elements[index]);
+
+			//Function function = functionsMap.get(currentFuncName);
+
 			if (elements[index].equals("+") || elements[index].equals("-") || elements[index].equals("*") || elements[index].equals("/")) {
+
+				int flag_Int = 0;
 
 				// Popping the Two Nodes
 				String Node1 = RegisterStack.pop();
 				String Node2 = RegisterStack.pop();
 
+				// Checking if in Parameter or in Local Scope. Else in Global Scope
+				if(!Node1.startsWith("$")) {
+					if(inFunction(Node1, currentFuncName) != null) {
+						Node1 = inFunction(Node1, currentFuncName);
+					}
+
+					else if(symbolsTree.getParentScope().checkDataType(Node1) == null) {
+						System.out.println("ID: " + Node1);
+						System.out.println("ERROR, " + Node1 + " Not Available");
+					}
+				}
+
+				// Checking if in Parameter or in Local Scope. Else in Global Scope
+				if(!Node2.startsWith("$")) {
+					if(inFunction(Node2, currentFuncName) != null) {
+						Node2 = inFunction(Node2, currentFuncName);
+					}
+
+					else if(symbolsTree.getParentScope().checkDataType(Node2) == null) {
+						System.out.println("ID: " + Node2);
+						System.out.println("ERROR, " + Node2 + " Not Available");
+					}
+				}
+
+//				Node1 = inFunction(Node1, currentFuncName);
+//				Node2 = inFunction(Node2, currentFuncName);
 
 				String newRegister = getRegister();
 
 				if (elements[index].equals("+")) {
 
 					nodesPrinter.addIRNode(new IRNode(OpCodeCheck("+", type), Node2, Node1, newRegister));
+					//functionsMap.get(currentFuncName).addIRNode(new IRNode(OpCodeCheck("+", type), Node2, Node1, newRegister));
 					RegisterStack.push(newRegister);
 
 				} else if (elements[index].equals("-")) {
 					nodesPrinter.addIRNode(new IRNode(OpCodeCheck("-", type), Node2, Node1, newRegister));
+					//functionsMap.get(currentFuncName).addIRNode(new IRNode(OpCodeCheck("-", type), Node2, Node1, newRegister));
 					RegisterStack.push(newRegister);
 
 				} else if (elements[index].equals("*")) {
 					nodesPrinter.addIRNode(new IRNode(OpCodeCheck("*", type), Node2, Node1, newRegister));
+					//functionsMap.get(currentFuncName).addIRNode(new IRNode(OpCodeCheck("*", type), Node2, Node1, newRegister));
 					RegisterStack.push(newRegister);
 
 				} else if (elements[index].equals("/")) {
 					nodesPrinter.addIRNode(new IRNode(OpCodeCheck("/", type), Node2, Node1, newRegister));
+					//functionsMap.get(currentFuncName).addIRNode(new IRNode(OpCodeCheck("/", type), Node2, Node1, newRegister));
 					RegisterStack.push(newRegister);
 				}
 
@@ -764,6 +1055,7 @@ public class Micro468Listener extends MicroBaseListener {
 
 					}
 				} catch (NumberFormatException e) {
+					//System.out.println("Variables");
 					RegisterStack.push(elements[index]); // Pushing the Variable Names to the Stack
 				}
 			}
@@ -778,9 +1070,15 @@ public class Micro468Listener extends MicroBaseListener {
 
 	@Override
 	public void enterVar_decl(MicroParser.Var_declContext ctx) {
+
+		//System.out.println("Enter Variable Declaration");
+
 		String[] variables = ctx.getChild(1).getText().split(",");
 
 		for (String variable : variables) {
+
+			//System.out.println(variable);
+			// Here I need to add the variable to the SymbolsTree
 			tinyNodeArrayList.add(new TinyNode("var", variable));
 			variablesList.add(variable);
 		}
