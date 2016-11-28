@@ -6,7 +6,7 @@
 <p>Your goal in this step is to generate executable code for a simple program written using your language (a program that only has the main function, which calls no other functions). For simplicity reasons, the code that my compiler will generate is meant to be executed on the Tiny Simulator.</p>
 
 #### (1) Generate an intermediate representation (IR):
-
+	
 #### (2) The Tiny Simulator
 
 #### (3) Code Generation
