@@ -75,13 +75,16 @@ class TestInfix {
         funcNames.add("sin");
         funcNames.add("multiply");
         funcNames.add("add");
+        funcNames.add("mul");
 
-        //String str = "(a + b) + func(a,b) + func1(a+b)";
-
-        String str = "sin(x+y) * z";
-
+        String str = "(a + b) + func(b-c) + func1(a+b)";
+        //String str = "sin(x+y) * z";
         //String str = "multiply(a,b);";
         //String str = "add(multiplyresult,c);";
+
+        //String str = "(a+b)*(b+d)/mul(a,b)+play";
+
+        //String str = "a + 27 + b*(c/d + 4+c);";
 
         infixtoPostfix(str, funcNames);
 

@@ -15,7 +15,7 @@ public class IRNode {
         this.Result = result;
     }
 
-    // When there are no operands For example for JUMP, LABEL, READI, READF, WRITEI, WRITEF, JSR
+    // When there are no operands For example for JUMP, LABEL, READI, READF, WRITEI, WRITEF, JSR, POP, PUSH
     public IRNode(String opcode, String result){
 
         this.OpCode = opcode;
@@ -33,7 +33,7 @@ public class IRNode {
         this.Result = result;
     }
 
-    // for LINK, RET
+    // for LINK, RET, PUSH, POP
     public IRNode(String opCode) {
         this.OpCode = opCode;
         this.Fst_Op = null;
