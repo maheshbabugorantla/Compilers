@@ -28,6 +28,9 @@ public class Micro468Listener extends MicroBaseListener {
 	SymbolsTable globalSymbolTable;
 
 	HashMap<String, Function> functionsMap; // HashMap of all Functions
+	HashSet<String> funcNames; // Names of all the Function in the Program
+
+	//String returnRegister;
 
 	public Micro468Listener() {
 		this.symbolsTree = new SymbolsTree();
@@ -41,9 +44,13 @@ public class Micro468Listener extends MicroBaseListener {
 
 		this.functionsMap = new HashMap<String, Function>();
 
+		this.funcNames = new HashSet<String>();
+
 		this.globalSymbolTable = new SymbolsTable("GLOBAL");
 
 		this.symbolsTableMap = new HashMap<String, SymbolsTable>(); // Used to find appropriate SymbolTable for each Function.
+
+		//this.returnRegister = null; // Used to store the register in which the return value of a function is stored in
 	}
 
 	public boolean isInteger(String string) {
@@ -164,6 +171,145 @@ public class Micro468Listener extends MicroBaseListener {
 
 	public String getBlockName() {
 		return "BLOCK " + blockNum++;
+	}
+
+
+	public String infixtoPostfix(String infixStr, HashSet<String> funcNames) {
+
+		StringBuilder postFix = new StringBuilder();
+
+		int flag_func = 0;
+
+		infixStr = infixStr.split(";")[0];
+
+		infixStr = infixStr.replaceAll("[\\s]", ""); // Removing all the White Spaces in the Expression
+
+		infixStr = new String(infixStr + ")");
+
+		String[] tokens = infixStr.split("(?<=[-+*/(),])|(?=[-+*/(),])");
+
+		for(int index = 0; index < tokens.length - 1; index++) {
+
+			if(tokens[index] != null)
+			{
+				if(funcNames.contains(tokens[index])) {
+					tokens[index] = new String(tokens[index] + tokens[index+1]);
+					tokens[index + 1] = null;
+					flag_func = 1;
+				}
+
+				else if(tokens[index].equals(")") && flag_func == 1) {
+					tokens[index] = "]";
+					flag_func = 0;
+				}
+			}
+		}
+
+		final List<String> list = new ArrayList<String>();
+		Collections.addAll(list,tokens);
+		list.removeAll(Collections.singleton(null)); // Removing Null from String array
+		tokens = list.toArray(new String[list.size()]);
+
+		/*for(String token: tokens) {
+			System.out.println(token);
+		}*/
+
+		Stack<String> OpStack = new Stack<String>(); // Stack used to store the Operators
+
+		HashMap<String, Integer> opPrecedence = new HashMap<String, Integer>(); // This HashMap Stores the Operator Precedence
+
+		opPrecedence.put("+", 1);
+		opPrecedence.put("-", 1);
+		opPrecedence.put("*", 2);
+		opPrecedence.put("/", 2);
+
+		OpStack.push("(");
+
+
+		for(String token: tokens) {
+
+			if(token.endsWith("(")) {
+				//System.out.println(token.substring(0,(token.length() - 1)));
+			}
+
+			//System.out.println("Token: " + token);
+			if(!token.equals("")) {
+				if(token.equals("(")) {
+					OpStack.push(token);
+				}
+
+				// Pushing the Function Label : if token is "["
+				else if(token.endsWith("(") && funcNames.contains(token.substring(0,(token.length()-1)))) {
+					OpStack.push(token.substring(0,token.length()-1));
+					//System.out.println("Inside function");
+				}
+
+				// Dealing with Operators ( + , - , * , / )
+				else if(token.equals("+") || token.equals("-") || token.equals("*") || token.equals("/")) {
+
+					//int currentPrecedence = 3;
+
+					if(OpStack.isEmpty() || OpStack.peek().equals("(") || funcNames.contains(OpStack.peek())) {
+						OpStack.push(token);
+					}
+
+					else if(opPrecedence.get(token) != null && (opPrecedence.get(token) >= opPrecedence.get(OpStack.peek()))) {
+						OpStack.push(token);
+					}
+
+					else {
+						postFix.append(OpStack.pop() + " ");
+						OpStack.push(token);
+					}
+				}
+
+				else if(token.equals(")")) {
+
+					String topToken = OpStack.pop();
+
+					while(!topToken.equals("(")) {
+						postFix.append(topToken + " ");
+						topToken = OpStack.pop();
+					}
+				}
+
+				else if(token.equals("]")) {
+
+					while(true) {
+						String topToken = OpStack.pop();
+						postFix.append(topToken + " ");
+
+						// topToken == "["
+						if(funcNames.contains(topToken)) {
+							break;
+						}
+					}
+				}
+
+				else if(token.equals(",")) {
+
+					String topToken = OpStack.peek();
+
+					//System.out.println(topToken);
+
+					// topToken != "["
+					while(!funcNames.contains(topToken)) {
+						postFix.append(topToken + " ");
+						OpStack.pop();
+						topToken = OpStack.peek();
+					}
+					OpStack.push(token);
+				}
+
+				// Appending Operand to the PostFix Expression
+				else {
+					postFix.append(token + " ");
+				}
+
+			} }
+
+		//System.out.println(postFix.toString());
+		return postFix.toString();
 	}
 
 	public String infix_to_Postfix(String infix_Str) {
@@ -378,9 +524,12 @@ public class Micro468Listener extends MicroBaseListener {
 		// Creating a new Symbol Table for each function
 		SymbolsTable table = new SymbolsTable(FuncID);
 
+		funcNames.add(FuncID); // Adding the Function Name to the 'funcNames' to the Set
+
 		symbolsTableMap.put(FuncID,table); // Adding the SymbolTable to the hashMap.
 
 		Function newFunction = new Function(FuncID);
+
 
 		// Generating New IRNode List for each Function
 
@@ -526,7 +675,7 @@ public class Micro468Listener extends MicroBaseListener {
 			//System.out.println("Comp Operator " + compOp);
 
 			if(RightOp.contains("(")) {
-				String postExpr = infix_to_Postfix(RightOp);
+				String postExpr = infixtoPostfix(RightOp, funcNames);
 				RightOp = parsePostfixExpr(postExpr, symbolsTree.getParentScope().checkDataType(LeftOp));
 			}
 
@@ -737,7 +886,6 @@ public class Micro468Listener extends MicroBaseListener {
 		// String LeftOp = "";
 		// String CompOp = "";
 		// String RightOp = "";
-
 	}
 
 	@Override public void exitDo_while_stmt(MicroParser.Do_while_stmtContext ctx) {
@@ -778,6 +926,8 @@ public class Micro468Listener extends MicroBaseListener {
 
 		nodesPrinter.addIRNode(new IRNode("JUMP",labelStack2.pop()));
 		nodesPrinter.addIRNode(new IRNode("LABEL",labelStack1.pop()));
+
+		System.out.println("Exit Do While");
 	}
 
 	@Override
@@ -913,7 +1063,7 @@ public class Micro468Listener extends MicroBaseListener {
 			flag_int = 1;
 
 			String regStore = getRegister();
-
+			//System.out.println("getRegister Int Parse Assign");
 			nodesPrinter.addIRNode(new IRNode(checkStore(type), expr, regStore));
 			nodesPrinter.addIRNode(new IRNode(checkStore(type), regStore, store));
 
@@ -926,13 +1076,13 @@ public class Micro468Listener extends MicroBaseListener {
 
 				Float.parseFloat(expr); // Checking if the RHS is a float e.g: a = 1.0;
 				String regStore = getRegister();
-
+				//System.out.println("getRegister Float Parse Assign");
 				nodesPrinter.addIRNode(new IRNode(checkStore(type), expr, regStore));
 				nodesPrinter.addIRNode(new IRNode(checkStore(type), regStore, store));
 			}
 		} catch (NumberFormatException e) {
 
-			String postFixExpr = infix_to_Postfix(expr);
+			String postFixExpr = infixtoPostfix(expr,funcNames);
 			//System.out.println(postFixExpr);
 			//System.out.println("After infix_to_Postfix");
 			String FinalRegister = parsePostfixExpr(postFixExpr, type);
@@ -968,9 +1118,9 @@ public class Micro468Listener extends MicroBaseListener {
 
 			//System.out.println(elements[index]);
 
-			//Function function = functionsMap.get(currentFuncName);
+			Function function = functionsMap.get(currentFuncName); // Used to fetch the Corresponding Local Registers for each parameters passed to called functions
 
-			if (elements[index].equals("+") || elements[index].equals("-") || elements[index].equals("*") || elements[index].equals("/")) {
+			if (elements[index].equals("+") || elements[index].equals("-") || elements[index].equals("*") || elements[index].equals("/") || elements[index].equals(",")) {
 
 				int flag_Int = 0;
 
@@ -1005,28 +1155,34 @@ public class Micro468Listener extends MicroBaseListener {
 //				Node1 = inFunction(Node1, currentFuncName);
 //				Node2 = inFunction(Node2, currentFuncName);
 
-				String newRegister = getRegister();
-
 				if (elements[index].equals("+")) {
-
+					String newRegister = getRegister();
 					nodesPrinter.addIRNode(new IRNode(OpCodeCheck("+", type), Node2, Node1, newRegister));
 					//functionsMap.get(currentFuncName).addIRNode(new IRNode(OpCodeCheck("+", type), Node2, Node1, newRegister));
 					RegisterStack.push(newRegister);
 
 				} else if (elements[index].equals("-")) {
+					String newRegister = getRegister();
 					nodesPrinter.addIRNode(new IRNode(OpCodeCheck("-", type), Node2, Node1, newRegister));
 					//functionsMap.get(currentFuncName).addIRNode(new IRNode(OpCodeCheck("-", type), Node2, Node1, newRegister));
 					RegisterStack.push(newRegister);
 
 				} else if (elements[index].equals("*")) {
+					String newRegister = getRegister();
 					nodesPrinter.addIRNode(new IRNode(OpCodeCheck("*", type), Node2, Node1, newRegister));
 					//functionsMap.get(currentFuncName).addIRNode(new IRNode(OpCodeCheck("*", type), Node2, Node1, newRegister));
 					RegisterStack.push(newRegister);
 
 				} else if (elements[index].equals("/")) {
+					String newRegister = getRegister();
 					nodesPrinter.addIRNode(new IRNode(OpCodeCheck("/", type), Node2, Node1, newRegister));
 					//functionsMap.get(currentFuncName).addIRNode(new IRNode(OpCodeCheck("/", type), Node2, Node1, newRegister));
 					RegisterStack.push(newRegister);
+				}
+
+				else if(elements[index].equals(",")) {
+					//System.out.println("Inside \",\"");
+					RegisterStack.push(new String(Node2 + "," + Node1)); // Parameters of the Function need to be pushed in the same order of their appearance
 				}
 
 			} else {
@@ -1036,7 +1192,8 @@ public class Micro468Listener extends MicroBaseListener {
 					Integer.parseInt(elements[index]);
 					flag_integer = 1;
 					String regStore = getRegister();
-
+					//System.out.println(regStore);
+					//System.out.println("getRegister Int Parse Assign");
 					nodesPrinter.addIRNode(new IRNode(checkStore(type), elements[index], regStore));
 					RegisterStack.push(regStore);
 
@@ -1049,14 +1206,51 @@ public class Micro468Listener extends MicroBaseListener {
 						Float.parseFloat(elements[index]);
 
 						String regStore = getRegister();
-
+						//System.out.println(regStore);
+						//System.out.println("getRegister Float Parse Assign");
 						nodesPrinter.addIRNode(new IRNode(checkStore(type), elements[index], regStore));
 						RegisterStack.push(regStore);
 
 					}
 				} catch (NumberFormatException e) {
 					//System.out.println("Variables");
-					RegisterStack.push(elements[index]); // Pushing the Variable Names to the Stack
+
+					// Checking of the Operand is a Function Label
+						if(funcNames.contains(elements[index])) {
+							String Parameters = RegisterStack.pop(); // For example, the Value of Parameters = "a,b,c"
+							//System.out.println("Parameters: " + Parameters);
+							String[] LocalVariables = Parameters.split(",");
+							nodesPrinter.addIRNode(new IRNode("PUSH"));
+							for(String variable: LocalVariables) {
+								if (variable.startsWith("$")) {
+									nodesPrinter.addIRNode(new IRNode("PUSH", variable));
+								}
+								else {
+									nodesPrinter.addIRNode(new IRNode("PUSH", function.getRegisterMap().get(variable)));
+								}
+							}
+
+							//System.out.println("after adding PUSH");
+
+							nodesPrinter.addIRNode(new IRNode("JSR", elements[index]));
+							//nodesPrinter.addIRNode(new IRNode("POP"));
+							for(int index1 = 0; index1 < LocalVariables.length; index1++) {
+								nodesPrinter.addIRNode(new IRNode("POP"));
+							}
+							String returnRegister = getRegister();
+							nodesPrinter.addIRNode(new IRNode("POP", returnRegister));
+							//System.out.println("After all POP");
+
+							//if(RegisterStack.isEmpty()) {
+								RegisterStack.push(returnRegister);
+							//	System.out.println("pushed Final Register");
+							//}
+
+							//nodesPrinter.addIRNode();
+						}
+						else {
+						RegisterStack.push(elements[index]); // Pushing the Variable Names to the Stack
+					}
 				}
 			}
 		}
