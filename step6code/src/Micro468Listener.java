@@ -458,28 +458,34 @@ public class Micro468Listener extends MicroBaseListener {
 
 		case "<":
 			nodesPrinter.addIRNode(new IRNode("GE", operand1, operand2, labelStack1.peek()));
+			functionsMap.get(currentFuncName).addIRNode(new IRNode("GE", operand1, operand2, labelStack1.peek()));
 			break;
 
 		case ">":
 			nodesPrinter.addIRNode(new IRNode("LE", operand1, operand2, labelStack1.peek()));
+			functionsMap.get(currentFuncName).addIRNode(new IRNode("LE", operand1, operand2, labelStack1.peek()));
 			break;
 
 		case "<=":
 			nodesPrinter.addIRNode(new IRNode("GT", operand1, operand2, labelStack1.peek()));
+			functionsMap.get(currentFuncName).addIRNode(new IRNode("GT", operand1, operand2, labelStack1.peek()));
 			break;
 
 		case ">=":
 			nodesPrinter.addIRNode(new IRNode("LT", operand1, operand2, labelStack1.peek()));
+			functionsMap.get(currentFuncName).addIRNode(new IRNode("LE", operand1, operand2, labelStack1.peek()));
 			break;
 
 		case "=":
 			nodesPrinter.addIRNode(new IRNode("NE", operand1, operand2, labelStack1.peek()));
+			functionsMap.get(currentFuncName).addIRNode(new IRNode("NE", operand1, operand2, labelStack1.peek()));
 			break;
 
 		case "!=":	
 			nodesPrinter.addIRNode(new IRNode("EQ", operand1, operand2, labelStack1.peek()));
+			functionsMap.get(currentFuncName).addIRNode(new IRNode("EQ", operand1, operand2, labelStack1.peek()));
 			break;
-		}		
+		}
 	}
 
 	////////////////////*/
@@ -503,7 +509,7 @@ public class Micro468Listener extends MicroBaseListener {
 	public void exitPgm_body(MicroParser.Pgm_bodyContext ctx) {
         //System.out.println("Exit Pgm Body");
         //symbolsTree.printWholeTree();
-		nodesPrinter.printIRNodes();
+		//nodesPrinter.printIRNodes();
 //		TinyNode.convertIRtoTiny(nodesPrinter.getIRNodeList(),symbolsTree,variablesList,tinyNodeArrayList);
 //		TinyNode.printTinyList(tinyNodeArrayList);
 	}
@@ -530,11 +536,10 @@ public class Micro468Listener extends MicroBaseListener {
 
 		Function newFunction = new Function(FuncID);
 
-
 		// Generating New IRNode List for each Function
 
-		//newFunction.addIRNode(new IRNode("LABEL", FuncID));
-		//newFunction.addIRNode(new IRNode("LINK"));
+		newFunction.addIRNode(new IRNode("LABEL", FuncID));
+		newFunction.addIRNode(new IRNode("LINK"));
 		nodesPrinter.addIRNode(new IRNode("LABEL", FuncID));
 		nodesPrinter.addIRNode(new IRNode("LINK"));
 		symbolsTree.getCurrentScope().addChild(table);
@@ -570,17 +575,15 @@ public class Micro468Listener extends MicroBaseListener {
 
 		newFunction.setSymbolsTable(table); // Setting an Individual Symbol Table for each Function
 
-		//newFunction.printFunction();
 		functionsMap.put(newFunction.getFunctionName(), newFunction);
 
 		//table.printSymTable();
 	}
 
-/*	@Override
+	@Override
 	public void exitFunc_decl(MicroParser.Func_declContext ctx) {
-		//newFunction.addIRNode(new IRNode("RET"));
-		nodesPrinter.addIRNode(new IRNode("RET"));
-	} */
+		functionsMap.get(currentFuncName).printFunction();
+	}
 
 	@Override public void enterReturn_stmt(MicroParser.Return_stmtContext ctx) {
 
@@ -598,8 +601,8 @@ public class Micro468Listener extends MicroBaseListener {
 
 			String register = getRegister();
 
-			//newFunction.addIRNode(new IRNode(checkStore("INT"),returnVariable,register)));
-			//newFunction.addIRNode(new IRNode(checkStore("INT"),register,"$R")))
+			newFunction.addIRNode(new IRNode(checkStore("INT"),returnVariable,register));
+			newFunction.addIRNode(new IRNode(checkStore("INT"),register,"$R"));
 
 			nodesPrinter.addIRNode(new IRNode(checkStore("INT"),returnVariable, register));
 			nodesPrinter.addIRNode(new IRNode(checkStore("INT"),register,"$R"));
@@ -616,8 +619,8 @@ public class Micro468Listener extends MicroBaseListener {
 
 				String register = getRegister();
 
-				//newFunction.addIRNode(new IRNode(checkStore("INT"),returnVariable, register));
-				//newFunction.addIRNode(new IRNode(checkStore("INT"),register,"$R"));
+				newFunction.addIRNode(new IRNode(checkStore("INT"),returnVariable, register));
+				newFunction.addIRNode(new IRNode(checkStore("INT"),register,"$R"));
 				nodesPrinter.addIRNode(new IRNode(checkStore("INT"),returnVariable, register));
 				nodesPrinter.addIRNode(new IRNode(checkStore("INT"),register,"$R"));
 			}
@@ -630,11 +633,11 @@ public class Micro468Listener extends MicroBaseListener {
 
 			String register = inFunction(returnVariable, currentFuncName);
 
-			//newFunction.addIRNode(new IRNode("RET"));
+			newFunction.addIRNode(new IRNode(checkStore(retType),register,"$R"));
 			nodesPrinter.addIRNode(new IRNode(checkStore(retType),register,"$R"));
 		}
 
-		//newFunction.addIRNode(new IRNode("RET"));
+		newFunction.addIRNode(new IRNode("RET"));
 		nodesPrinter.addIRNode(new IRNode("RET"));
 	}
 
@@ -685,10 +688,12 @@ public class Micro468Listener extends MicroBaseListener {
 				// Checking to see if the Right Hand Side of the If Statement Expression is an integer or Float
 				if(isInteger(RightOp)) {
 					nodesPrinter.addIRNode(new IRNode(checkStore("INT"),RightOp,newRegister));
+					functionsMap.get(currentFuncName).addIRNode(new IRNode(checkStore("INT"),RightOp,newRegister));
 				}
 
 				else if(isFloat(RightOp)) {
 					nodesPrinter.addIRNode(new IRNode(checkStore("FLOAT"), RightOp, newRegister));
+					functionsMap.get(currentFuncName).addIRNode(new IRNode(checkStore("INT"),RightOp,newRegister));
 				}
 
 				RightOp = newRegister;
@@ -760,9 +765,12 @@ public class Micro468Listener extends MicroBaseListener {
 			//System.out.println("Binary");
 			compOp = ctx.getChild(2).getText();
 			//System.out.println(compOp);
-
+			String labelSt1 = labelStack1.pop();
 			nodesPrinter.addIRNode(new IRNode("JUMP",labelStack2.peek()));
-			nodesPrinter.addIRNode(new IRNode("LABEL",labelStack1.pop()));			
+			nodesPrinter.addIRNode(new IRNode("LABEL",labelSt1));
+
+			functionsMap.get(currentFuncName).addIRNode(new IRNode("JUMP",labelStack2.peek()));
+			functionsMap.get(currentFuncName).addIRNode(new IRNode("LABEL",labelSt1));
 
 			String Label = getLabel();
 			labelStack1.push(Label);
@@ -771,6 +779,8 @@ public class Micro468Listener extends MicroBaseListener {
 			String reg2 = getRegister();
 			nodesPrinter.addIRNode(new IRNode(checkStore("INT"),"1",reg1));
 			nodesPrinter.addIRNode(new IRNode(checkStore("INT"),"1",reg2));
+			functionsMap.get(currentFuncName).addIRNode(new IRNode(checkStore("INT"),"1",reg1));
+			functionsMap.get(currentFuncName).addIRNode(new IRNode(checkStore("INT"),"1",reg2));
 
 			if(compOp.equals("TRUE")) {
 				checkCompOp("=", reg1, reg2);
@@ -792,8 +802,12 @@ public class Micro468Listener extends MicroBaseListener {
 				System.out.println(ctx.getChild(2).getChild(2).getChild(1).getText());
 			}
 
+			String labelSt1 = labelStack1.pop();
+
 			nodesPrinter.addIRNode(new IRNode("JUMP",labelStack2.peek()));
-			nodesPrinter.addIRNode(new IRNode("LABEL",labelStack1.pop()));
+			nodesPrinter.addIRNode(new IRNode("LABEL", labelSt1));
+			functionsMap.get(currentFuncName).addIRNode(new IRNode("JUMP",labelStack2.peek()));
+			functionsMap.get(currentFuncName).addIRNode(new IRNode("LABEL",labelSt1));
 
 			labelStack1.push(getLabel());
 
@@ -805,10 +819,12 @@ public class Micro468Listener extends MicroBaseListener {
 				// Checking to see if the Right Hand Side of the If Statement Expression is an integer or Float
 				if(isInteger(RightOp)) {
 					nodesPrinter.addIRNode(new IRNode(checkStore("INT"),RightOp,newRegister));
+					functionsMap.get(currentFuncName).addIRNode(new IRNode(checkStore("INT"),RightOp,newRegister));
 				}
 
 				else if(isFloat(RightOp)) {
 					nodesPrinter.addIRNode(new IRNode(checkStore("FLOAT"), RightOp, newRegister));
+					functionsMap.get(currentFuncName).addIRNode(new IRNode(checkStore("FLOAT"),RightOp,newRegister));
 				}
 
 				RightOp = newRegister;
@@ -833,9 +849,17 @@ public class Micro468Listener extends MicroBaseListener {
 	}
 
 	@Override public void exitIf_stmt(MicroParser.If_stmtContext ctx) {
+
 		nodesPrinter.addIRNode(new IRNode("JUMP", labelStack2.peek()));
-		nodesPrinter.addIRNode(new IRNode("LABEL",labelStack1.pop()));
-		nodesPrinter.addIRNode(new IRNode("LABEL",labelStack2.pop()));
+		functionsMap.get(currentFuncName).addIRNode(new IRNode("JUMP", labelStack2.peek()));
+
+		String labelSt1 = labelStack1.pop();
+		String labelSt2 = labelStack2.pop();
+
+		nodesPrinter.addIRNode(new IRNode("LABEL",labelSt1));
+		nodesPrinter.addIRNode(new IRNode("LABEL",labelSt2));
+		functionsMap.get(currentFuncName).addIRNode(new IRNode("LABEL",labelSt1));
+		functionsMap.get(currentFuncName).addIRNode(new IRNode("LABEL",labelSt2));
 	}
 
 	// Might Have to Modify it
@@ -856,6 +880,7 @@ public class Micro468Listener extends MicroBaseListener {
 		String newLabel = getLabel();
 		labelStack2.push(newLabel);
 		nodesPrinter.addIRNode(new IRNode("LABEL",newLabel));
+		functionsMap.get(currentFuncName).addIRNode(new IRNode("LABEL",newLabel));
 		labelStack1.push(getLabel());
 
 		SymbolsTable table = new SymbolsTable(getBlockName());
@@ -906,10 +931,12 @@ public class Micro468Listener extends MicroBaseListener {
 				// Checking to see if the Right Hand Side of the If Statement Expression is an integer or Float
 				if(isInteger(RightOp)) {
 					nodesPrinter.addIRNode(new IRNode(checkStore("INT"),RightOp,newRegister));
+					functionsMap.get(currentFuncName).addIRNode(new IRNode(checkStore("INT"),RightOp,newRegister));
 				}
 
 				else if(isFloat(RightOp)) {
 					nodesPrinter.addIRNode(new IRNode(checkStore("FLOAT"), RightOp, newRegister));
+					functionsMap.get(currentFuncName).addIRNode(new IRNode(checkStore("FLOAT"), RightOp, newRegister));
 				}
 
 				RightOp = newRegister;
@@ -924,9 +951,13 @@ public class Micro468Listener extends MicroBaseListener {
 		//System.out.println(labelStack2.size());
 		//System.out.println("Exit Do While " + ctx.getChild(5).getText());
 
-		nodesPrinter.addIRNode(new IRNode("JUMP",labelStack2.pop()));
-		nodesPrinter.addIRNode(new IRNode("LABEL",labelStack1.pop()));
+		String labelSt1 = labelStack1.pop();
+		String labelSt2 = labelStack2.pop();
 
+		nodesPrinter.addIRNode(new IRNode("JUMP",labelSt2));
+		nodesPrinter.addIRNode(new IRNode("LABEL",labelSt1));
+		functionsMap.get(currentFuncName).addIRNode(new IRNode("JUMP",labelSt2));
+		functionsMap.get(currentFuncName).addIRNode(new IRNode("LABEL",labelSt1));
 		System.out.println("Exit Do While");
 	}
 
@@ -1023,9 +1054,11 @@ public class Micro468Listener extends MicroBaseListener {
 			if (type.equals("INT")) {
 				IRNode irNodeI = new IRNode("READI", id);
 				nodesPrinter.addIRNode(irNodeI);
+				functionsMap.get(currentFuncName).addIRNode(irNodeI);
 			} else if (type.equals("FLOAT")) {
 				IRNode irNodeF = new IRNode("READF", id);
 				nodesPrinter.addIRNode(irNodeF);
+				functionsMap.get(currentFuncName).addIRNode(irNodeF);
 			}
 		}
 	}
@@ -1064,8 +1097,23 @@ public class Micro468Listener extends MicroBaseListener {
 
 			String regStore = getRegister();
 			//System.out.println("getRegister Int Parse Assign");
+
+			// Checking if the 'store' variable is in the Local Scope of the Function
+			if(functionsMap.get(currentFuncName).getRegisterMap().get(store) != null) {
+				store = functionsMap.get(currentFuncName).getRegisterMap().get(store);
+			}
+
+			// Else check if the Variable is in the Global Scope if not it is an Error.
+			else if(symbolsTree.getParentScope().checkDataType(store) == null) {
+				System.out.println("Variable: " + store);
+				System.out.println("ERROR: Symbol not present");
+				return;
+			}
+
 			nodesPrinter.addIRNode(new IRNode(checkStore(type), expr, regStore));
 			nodesPrinter.addIRNode(new IRNode(checkStore(type), regStore, store));
+			functionsMap.get(currentFuncName).addIRNode(new IRNode(checkStore(type), expr, regStore));
+			functionsMap.get(currentFuncName).addIRNode(new IRNode(checkStore(type), regStore, store));
 
 		} catch (NumberFormatException e) {
 
@@ -1077,8 +1125,23 @@ public class Micro468Listener extends MicroBaseListener {
 				Float.parseFloat(expr); // Checking if the RHS is a float e.g: a = 1.0;
 				String regStore = getRegister();
 				//System.out.println("getRegister Float Parse Assign");
+
+				// Checking if the 'store' variable is in the Local Scope of the Function
+				if(functionsMap.get(currentFuncName).getRegisterMap().get(store) != null) {
+					store = functionsMap.get(currentFuncName).getRegisterMap().get(store);
+				}
+
+				// Else check if the Variable is in the Global Scope if not it is an Error.
+				else if(symbolsTree.getParentScope().checkDataType(store) == null) {
+					System.out.println("Variable: " + store);
+					System.out.println("ERROR: Symbol not present");
+					return;
+				}
+
 				nodesPrinter.addIRNode(new IRNode(checkStore(type), expr, regStore));
 				nodesPrinter.addIRNode(new IRNode(checkStore(type), regStore, store));
+				functionsMap.get(currentFuncName).addIRNode(new IRNode(checkStore(type), expr, regStore));
+				functionsMap.get(currentFuncName).addIRNode(new IRNode(checkStore(type), regStore, store));
 			}
 		} catch (NumberFormatException e) {
 
@@ -1092,14 +1155,14 @@ public class Micro468Listener extends MicroBaseListener {
 			if(inFunction(result,currentFuncName) != null) {
 				result = inFunction(result, currentFuncName);
 				nodesPrinter.addIRNode(new IRNode(checkStore(type), FinalRegister, result));
-				//functionsMap.get(currentFuncName).addIRNode(new IRNode(checkStore(type), FinalRegister, result)); // Adding IRNode to the respective Function
+				functionsMap.get(currentFuncName).addIRNode(new IRNode(checkStore(type), FinalRegister, result)); // Adding IRNode to the respective Function
 				return;
 			}
 
 			// Checking in Global Scope
 			if(symbolsTree.getParentScope().checkDataType(result) != null) {
 				nodesPrinter.addIRNode(new IRNode(checkStore(type), FinalRegister, result));
-				//functionsMap.get(currentFuncName).addIRNode(new IRNode(checkStore(type), FinalRegister, result));
+				functionsMap.get(currentFuncName).addIRNode(new IRNode(checkStore(type), FinalRegister, result));
 				return;
 			}
 //			nodesPrinter.addIRNode(new IRNode(checkStore(type), FinalRegister, result));
@@ -1158,25 +1221,25 @@ public class Micro468Listener extends MicroBaseListener {
 				if (elements[index].equals("+")) {
 					String newRegister = getRegister();
 					nodesPrinter.addIRNode(new IRNode(OpCodeCheck("+", type), Node2, Node1, newRegister));
-					//functionsMap.get(currentFuncName).addIRNode(new IRNode(OpCodeCheck("+", type), Node2, Node1, newRegister));
+					functionsMap.get(currentFuncName).addIRNode(new IRNode(OpCodeCheck("+", type), Node2, Node1, newRegister));
 					RegisterStack.push(newRegister);
 
 				} else if (elements[index].equals("-")) {
 					String newRegister = getRegister();
 					nodesPrinter.addIRNode(new IRNode(OpCodeCheck("-", type), Node2, Node1, newRegister));
-					//functionsMap.get(currentFuncName).addIRNode(new IRNode(OpCodeCheck("-", type), Node2, Node1, newRegister));
+					functionsMap.get(currentFuncName).addIRNode(new IRNode(OpCodeCheck("-", type), Node2, Node1, newRegister));
 					RegisterStack.push(newRegister);
 
 				} else if (elements[index].equals("*")) {
 					String newRegister = getRegister();
 					nodesPrinter.addIRNode(new IRNode(OpCodeCheck("*", type), Node2, Node1, newRegister));
-					//functionsMap.get(currentFuncName).addIRNode(new IRNode(OpCodeCheck("*", type), Node2, Node1, newRegister));
+					functionsMap.get(currentFuncName).addIRNode(new IRNode(OpCodeCheck("*", type), Node2, Node1, newRegister));
 					RegisterStack.push(newRegister);
 
 				} else if (elements[index].equals("/")) {
 					String newRegister = getRegister();
 					nodesPrinter.addIRNode(new IRNode(OpCodeCheck("/", type), Node2, Node1, newRegister));
-					//functionsMap.get(currentFuncName).addIRNode(new IRNode(OpCodeCheck("/", type), Node2, Node1, newRegister));
+					functionsMap.get(currentFuncName).addIRNode(new IRNode(OpCodeCheck("/", type), Node2, Node1, newRegister));
 					RegisterStack.push(newRegister);
 				}
 
@@ -1195,8 +1258,8 @@ public class Micro468Listener extends MicroBaseListener {
 					//System.out.println(regStore);
 					//System.out.println("getRegister Int Parse Assign");
 					nodesPrinter.addIRNode(new IRNode(checkStore(type), elements[index], regStore));
+					functionsMap.get(currentFuncName).addIRNode(new IRNode(checkStore(type), elements[index], regStore));
 					RegisterStack.push(regStore);
-
 				} catch (NumberFormatException e) {
 
 				}
@@ -1209,8 +1272,8 @@ public class Micro468Listener extends MicroBaseListener {
 						//System.out.println(regStore);
 						//System.out.println("getRegister Float Parse Assign");
 						nodesPrinter.addIRNode(new IRNode(checkStore(type), elements[index], regStore));
+						functionsMap.get(currentFuncName).addIRNode(new IRNode(checkStore(type), elements[index], regStore));
 						RegisterStack.push(regStore);
-
 					}
 				} catch (NumberFormatException e) {
 					//System.out.println("Variables");
@@ -1221,32 +1284,32 @@ public class Micro468Listener extends MicroBaseListener {
 							//System.out.println("Parameters: " + Parameters);
 							String[] LocalVariables = Parameters.split(",");
 							nodesPrinter.addIRNode(new IRNode("PUSH"));
+							functionsMap.get(currentFuncName).addIRNode(new IRNode("PUSH"));
 							for(String variable: LocalVariables) {
 								if (variable.startsWith("$")) {
 									nodesPrinter.addIRNode(new IRNode("PUSH", variable));
+									functionsMap.get(currentFuncName).addIRNode(new IRNode("PUSH", variable));
 								}
 								else {
 									nodesPrinter.addIRNode(new IRNode("PUSH", function.getRegisterMap().get(variable)));
+									functionsMap.get(currentFuncName).addIRNode(new IRNode("PUSH", function.getRegisterMap().get(variable)));
 								}
 							}
 
 							//System.out.println("after adding PUSH");
 
 							nodesPrinter.addIRNode(new IRNode("JSR", elements[index]));
-							//nodesPrinter.addIRNode(new IRNode("POP"));
+							functionsMap.get(currentFuncName).addIRNode(new IRNode("JSR", elements[index]));
 							for(int index1 = 0; index1 < LocalVariables.length; index1++) {
 								nodesPrinter.addIRNode(new IRNode("POP"));
+								functionsMap.get(currentFuncName).addIRNode(new IRNode("POP"));
 							}
 							String returnRegister = getRegister();
 							nodesPrinter.addIRNode(new IRNode("POP", returnRegister));
+							functionsMap.get(currentFuncName).addIRNode(new IRNode("POP", returnRegister));
 							//System.out.println("After all POP");
 
-							//if(RegisterStack.isEmpty()) {
-								RegisterStack.push(returnRegister);
-							//	System.out.println("pushed Final Register");
-							//}
-
-							//nodesPrinter.addIRNode();
+							RegisterStack.push(returnRegister);
 						}
 						else {
 						RegisterStack.push(elements[index]); // Pushing the Variable Names to the Stack
