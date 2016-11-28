@@ -67,6 +67,7 @@ class Function {
     }
 
     public void addIRNode(IRNode irNode) {
+        //System.out.println(irNode);
         IRList.add(irNode);
     }
 
@@ -74,21 +75,37 @@ class Function {
         return registerMap;
     }
 
+    public void printIRList(ArrayList<IRNode> IRList) {
+        for (int index = 0; index < IRList.size(); index++) {
+            IRNode irNode = IRList.get(index);
+            System.out.println(irNode.toString());
+        }
+    }
+
     // For Debugging Purposes only
 
-    // Print the registerMap and SymbolsTable for Function.
+    // Print the registerMap, SymbolsTable and IRList for Function.
     public void printFunction() {
-
+        System.out.println("---------------------------------------------------------------------------");
         System.out.println("");
         System.out.println("FUNCTION: " + getFunctionName());
         System.out.println("");
         System.out.println(new String("registerMap: " + Arrays.asList(registerMap)));
 
         funcSymbols.printSymTable();
+
+        //System.out.println(IRList.size());
+
+
+        System.out.println(";IR code");
+        printIRList(IRList);
+        System.out.println("---------------------------------------------------------------------------");
     }
 
     // Get the Name of the Function
     public String getFunctionName() {
         return this.functionName;
     }
+
+
 }
