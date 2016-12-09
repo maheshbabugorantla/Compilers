@@ -18,6 +18,8 @@ public class Micro468Listener extends MicroBaseListener {
 
 	String currentFuncName;
 
+	int flag_returnStmt = 0;
+
 	NodesPrinter nodesPrinter; // Used to print all the IRNodes
 
 	List<TinyNode> tinyNodeArrayList = new ArrayList<TinyNode>();
@@ -89,19 +91,31 @@ public class Micro468Listener extends MicroBaseListener {
 
 	public String inFunction(String id, String FunctionName) {
 
+		//System.out.println("Check for Variable inside Local Scope or Global Scope");
+
 		Function function = functionsMap.get(FunctionName);
 
-		String reg = function.getRegisterMap().get(id);
+//		try {
+			String reg = function.getRegisterMap().get(id);
+			//System.out.println("Done Checking");
 
-		// Not a local Variable
-		if(reg != null) {
-			return reg;
-		}
+			// Not a local Variable
+			if (reg != null) {
+				return reg;
+			}
+//		}
+//		catch (Exception exception) {
+			// Checking if the variable is in the Global Scope
+			if (symbolsTree.getParentScope().checkDataType(id) != null) {
+				return id;
+			}
 
-		// Checking if the variable is in the Global Scope
-		if(symbolsTree.getParentScope().checkDataType(id) != null) {
-			return id;
-		}
+			else {
+				System.out.println("ERROR ID: " + id);
+				System.out.println("Symbol not found");
+				//System.exit(1);
+			}
+//		}
 
 		return null;
 	}
@@ -438,6 +452,7 @@ public class Micro468Listener extends MicroBaseListener {
 			else if(symbolsTree.getParentScope().checkDataType(operand1) == null) { // Checking if not in Global Scope
 				System.out.println("ERROR ID");
 				System.out.println(operand1);
+				//System.exit(1);
 				return;
 			}
 		}
@@ -450,6 +465,7 @@ public class Micro468Listener extends MicroBaseListener {
 			else if(symbolsTree.getParentScope().checkDataType(operand2) == null) { // Checking if not in Global Scope
 				System.out.println("ERROR ID");
 				System.out.println(operand2);
+				// System.exit(1);
 				return;
 			}
 		}
@@ -510,9 +526,10 @@ public class Micro468Listener extends MicroBaseListener {
         //System.out.println("Exit Pgm Body");
         //symbolsTree.printWholeTree();
 		nodesPrinter.printIRNodes();
-		CFGHandler cfgHandler = new CFGHandler(nodesPrinter.getIRNodeList(), symbolsTree, functionsMap);
-//		TinyNode.convertIRtoTiny(nodesPrinter.getIRNodeList(),symbolsTree,variablesList,tinyNodeArrayList);
-//		TinyNode.printTinyList(tinyNodeArrayList);
+		//CFGHandler cfgHandler = new CFGHandler(nodesPrinter.getIRNodeList(), symbolsTree, functionsMap);
+		TinyNode tinyNode = new TinyNode(functionsMap, symbolsTree.getParentScope()); // Initializing the functionsMap
+		tinyNode.convertIRtoTiny(nodesPrinter.getIRNodeList(),symbolsTree,variablesList,tinyNodeArrayList);
+		tinyNode.printTinyList(tinyNodeArrayList);
 	}
 
 	@Override
@@ -545,6 +562,8 @@ public class Micro468Listener extends MicroBaseListener {
 		nodesPrinter.addIRNode(new IRNode("LINK"));
 		symbolsTree.getCurrentScope().addChild(table);
 
+		functionsMap.put(newFunction.getFunctionName(), newFunction);
+
 		// Fetching the Parameters of the Function
 		if (ctx.getChild(4) != null) {
             //System.out.println("Inside If 4");
@@ -574,23 +593,41 @@ public class Micro468Listener extends MicroBaseListener {
 			}
 		}
 
+		//System.out.println("Done Fetching the Local Variables");
+		//System.out.println(table);
 		newFunction.setSymbolsTable(table); // Setting an Individual Symbol Table for each Function
 
-		functionsMap.put(newFunction.getFunctionName(), newFunction);
-
+//		functionsMap.put(newFunction.getFunctionName(), newFunction);
+		//System.out.println("End of Function Declaration");
 		//table.printSymTable();
 	}
 
 	@Override
 	public void exitFunc_decl(MicroParser.Func_declContext ctx) {
 		//functionsMap.get(currentFuncName).printFunction();
+		//if (flag_returnStmt == 0) {
+			//Function newFunction = functionsMap.get(currentFuncName);
+			//newFunction.addIRNode(new IRNode("RET"));
+			//nodesPrinter.addIRNode(new IRNode("RET"));
+		//}
+	}
+
+	@Override
+	public void exitFunc_body(MicroParser.Func_bodyContext var1) {
+
+		//System.out.println(var1);
+
+		Function newFunction = functionsMap.get(currentFuncName);
+		newFunction.addIRNode(new IRNode("RET"));
+		nodesPrinter.addIRNode(new IRNode("RET"));
 	}
 
 	@Override public void enterReturn_stmt(MicroParser.Return_stmtContext ctx) {
 
-//		System.out.println("Enter Return Statement");
+		//System.out.println("Enter Return Statement");
 
 		int integer_flag = 0;
+		flag_returnStmt = 1;
 
 		String returnVariable = ctx.getChild(1).getText();
 
@@ -994,6 +1031,7 @@ public class Micro468Listener extends MicroBaseListener {
 			if (type == null) {
 				System.out.println(id);
 				System.out.println("ERROR ID");
+				// System.exit(0);
 				return;
 			}
 
@@ -1047,6 +1085,7 @@ public class Micro468Listener extends MicroBaseListener {
 			if (type == null) {
 				System.out.println(id);
 				System.out.println("ERROR ID");
+				//System.exit(1);
 				return;
 			}
 
@@ -1082,6 +1121,8 @@ public class Micro468Listener extends MicroBaseListener {
 		SymbolsTable symbolsTable = symbolsTableMap.get(currentFuncName);
 		type = symbolsTable.checkDataType(store);
 
+		//System.out.println("After SymbolsTable");
+
 		// Check for its existence in the Global Scope if not in the Local Scope
 		if(type == null) {
 			type =  symbolsTree.getParentScope().checkDataType(store);
@@ -1095,6 +1136,7 @@ public class Micro468Listener extends MicroBaseListener {
 		int flag_int = 0;
 
 		try {
+
 			Integer.parseInt(expr); // Checking if the RHS is an integer e.g: a = 2;
 
 			flag_int = 1;
@@ -1102,22 +1144,38 @@ public class Micro468Listener extends MicroBaseListener {
 			String regStore = getRegister();
 			//System.out.println("getRegister Int Parse Assign");
 
+			// if the Variable is a part of the function this returns the Local Register
+			// Or returns the variable name if it is a global Variable
+			//store = inFunction(store, currentFuncName);
+
+			/*System.out.println("Store: " + store);
+			System.out.println("Type: " + type);
+			System.out.println("Expr: " + expr);
+			System.out.println("RegStore: " + regStore);
+			System.out.println("Current Function Name: " + currentFuncName);
+			System.out.println(functionsMap.get(currentFuncName));
+			System.out.println("Done Getting Details"); */
+
 			// Checking if the 'store' variable is in the Local Scope of the Function
-			if(functionsMap.get(currentFuncName).getRegisterMap().get(store) != null) {
-				store = functionsMap.get(currentFuncName).getRegisterMap().get(store);
+			if (functionsMap.get(currentFuncName).getRegisterMap().get(store) != null) {
+					//System.out.println("Checkin in Local Scope");
+					store = functionsMap.get(currentFuncName).getRegisterMap().get(store);
 			}
 
 			// Else check if the Variable is in the Global Scope if not it is an Error.
-			else if(symbolsTree.getParentScope().checkDataType(store) == null) {
-				System.out.println("Variable: " + store);
-				System.out.println("ERROR: Symbol not present");
-				return;
-			}
+			else if (symbolsTree.getParentScope().checkDataType(store) == null) {
+					System.out.println("Variable: " + store);
+					System.out.println("ERROR: Symbol not present");
+					return;
+				}
 
 			nodesPrinter.addIRNode(new IRNode(checkStore(type), expr, regStore));
 			nodesPrinter.addIRNode(new IRNode(checkStore(type), regStore, store));
+			//System.out.println("Done 1");
 			functionsMap.get(currentFuncName).addIRNode(new IRNode(checkStore(type), expr, regStore));
 			functionsMap.get(currentFuncName).addIRNode(new IRNode(checkStore(type), regStore, store));
+			//System.out.println("Done 2");
+			//System.out.println("Done Integer");
 
 		} catch (NumberFormatException e) {
 
@@ -1340,7 +1398,7 @@ public class Micro468Listener extends MicroBaseListener {
 
 			//System.out.println(variable);
 			// Here I need to add the variable to the SymbolsTree
-			tinyNodeArrayList.add(new TinyNode("var", variable));
+			//tinyNodeArrayList.add(new TinyNode("var", variable));
 			variablesList.add(variable);
 		}
 	}

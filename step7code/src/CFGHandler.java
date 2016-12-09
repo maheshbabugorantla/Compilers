@@ -215,7 +215,7 @@ class CFGHandler {
                // This Creates the In and Out Sets
                livenessAnalysisSet(IRNodeList, globalVariables);
 
-               printCFGLinkedList(cfgList);
+               //printCFGLinkedList(cfgList);
            }
 
            // From Step7 Document
@@ -280,7 +280,7 @@ class CFGHandler {
 
                     IRNode irNode = irNodeArrayList.get(index);
 
-                    //System.out.println(irNode);
+                    System.out.println(irNode);
 
                     CFGNode cfgNode = CFGNodeMap.get(IRNodeMap.get(irNode));
 
@@ -305,6 +305,9 @@ class CFGHandler {
 
                     cfgNode.IN = InSet;
                     cfgNode.OUT = OutSet;
+
+                    System.out.println("CFG IN: " + cfgNode.IN);
+                    System.out.println("CFG OUT: " + cfgNode.OUT);
                 }
            }
 

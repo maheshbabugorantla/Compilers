@@ -16,7 +16,7 @@ public class IRNode {
     }
 
     // When there are no operands For example for JUMP, LABEL, READI, READF, WRITEI, WRITEF, JSR, POP, PUSH
-    public IRNode(String opcode, String result){
+    public IRNode(String opcode, String result) {
 
         this.OpCode = opcode;
         this.Fst_Op = null;
