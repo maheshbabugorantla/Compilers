@@ -261,22 +261,6 @@ public class Micro468Listener extends MicroBaseListener {
 				// Dealing with Operators ( + , - , * , / )
 				else if(token.equals("+") || token.equals("-") || token.equals("*") || token.equals("/")) {
 
-					//int currentPrecedence = 3;
-
-/*					if(OpStack.isEmpty() || OpStack.peek().equals("(") || funcNames.contains(OpStack.peek())) {
-						OpStack.push(token);
-					}
-
-					else if(opPrecedence.get(token) != null && (opPrecedence.get(token) >= opPrecedence.get(OpStack.peek()))) {
-						OpStack.push(token);
-					}
-
-					else {
-						postFix.append(OpStack.pop() + " ");
-						OpStack.push(token);
-					} */
-
-
 					if(OpStack.isEmpty() || OpStack.peek().equals("(") || funcNames.contains(OpStack.peek())) {
 						OpStack.push(token);
 					}

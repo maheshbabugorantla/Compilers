@@ -189,14 +189,48 @@ public class TinyNode {
                         registerMap.put(irNode.Result, registerMap.get(irNode.Fst_Op));
                     }
                 }else if (irNode.Fst_Op.contains("$")) { // Have to handle cases with Local Variable and Parameters
-                    tinyNodeArrayList.add(new TinyNode(tinyOpCodeCheck(irNode.OpCode), irNode.Sec_Op, registerMap.get(irNode.Fst_Op)));
-                    registerMap.put(irNode.Result, registerMap.get(irNode.Fst_Op));
-                } else if (irNode.Sec_Op.contains("$")) { // Have to handle cases with Local Variable and Parameters
+
+                    if(irNode.Fst_Op.startsWith("$L") || irNode.Fst_Op.startsWith("$P")) {
+
+                        // If the Result Register is not in the RegisterMap create a new tinyRegister and push it into the RegisterMap
+                        if(registerMap.get(irNode.Result) == null)
+                        {
+                            tinyReg += 1;
+                            registerMap.put(irNode.Result, "r" + Integer.toString(tinyReg));
+                        }
+
+                        String firstOp = getRelRegister(irNode.Fst_Op);
+                        tinyNodeArrayList.add(new TinyNode("move", firstOp, registerMap.get(irNode.Result)));
+                        tinyNodeArrayList.add(new TinyNode(tinyOpCodeCheck(irNode.OpCode), irNode.Sec_Op, registerMap.get(irNode.Result)));
+                    }
+
+                    else { // If the firstOperand looks like $T# , # => Register No.
+                        tinyNodeArrayList.add(new TinyNode(tinyOpCodeCheck(irNode.OpCode), irNode.Sec_Op, registerMap.get(irNode.Fst_Op)));
+                        registerMap.put(irNode.Result, registerMap.get(irNode.Fst_Op));
+                    }
+                } else if (irNode.Sec_Op.contains("$")) { // Have to handle cases with Local Variable and Parameters, First Operand is always a global Variable
+
                     tinyReg += 1;
                     tinyNodeArrayList.add(new TinyNode("move", irNode.Fst_Op, "r" + Integer.toString(tinyReg)));
                     registerMap.put(irNode.Fst_Op, "r" + Integer.toString(tinyReg));
-                    tinyNodeArrayList.add(new TinyNode(tinyOpCodeCheck(irNode.OpCode), registerMap.get(irNode.Sec_Op), registerMap.get(irNode.Fst_Op)));
-                    registerMap.put(irNode.Result, registerMap.get(irNode.Fst_Op));
+
+                    if(irNode.Fst_Op.startsWith("$L") || irNode.Fst_Op.startsWith("$P")) {
+
+                        // If the Result Register is not in the RegisterMap create a new tinyRegister and push it into the RegisterMap
+                        if(registerMap.get(irNode.Result) == null) {
+                            tinyReg += 1;
+                            registerMap.put(irNode.Result, "r" + Integer.toString(tinyReg));
+                        }
+
+                        String secondOp = getRelRegister(irNode.Sec_Op);
+                        tinyNodeArrayList.add(new TinyNode("move", secondOp, registerMap.get(irNode.Result)));
+                        tinyNodeArrayList.add(new TinyNode(tinyOpCodeCheck(irNode.OpCode), registerMap.get(irNode.Fst_Op), registerMap.get(irNode.Result)));
+                    }
+
+                    else {
+                        tinyNodeArrayList.add(new TinyNode(tinyOpCodeCheck(irNode.OpCode), registerMap.get(irNode.Sec_Op), registerMap.get(irNode.Fst_Op)));
+                        registerMap.put(irNode.Result, registerMap.get(irNode.Fst_Op));
+                    }
                 } else { // All Global Variables
                     tinyReg += 1;
                     tinyNodeArrayList.add(new TinyNode("move", irNode.Fst_Op, "r" + Integer.toString(tinyReg)));
@@ -298,8 +332,8 @@ public class TinyNode {
                         tinyNodeArrayList.add(new TinyNode("move", registerMap.get(irNode.Fst_Op), Result));
                     }
                 }
-                else{
-                    // Global Variables I Guess
+                else {
+                    // Global Variables
                     if(variablesList.contains(irNode.Fst_Op) && variablesList.contains(irNode.Result)) {
 
                         //System.out.println("Storing a global variable in another global variable");
@@ -343,7 +377,7 @@ public class TinyNode {
             }
 
             else if(irNode.OpCode.equals("GE")) {
-                //System.out.println("Inside GE");
+                //System.out.println(";Inside GE");
 
                 retCount = 1;
 
@@ -375,7 +409,7 @@ public class TinyNode {
             }
 
             else if(irNode.OpCode.equals("GT")) {
-                //System.out.println("Inside GT");
+                //System.out.println(";Inside GT");
 
                 retCount = 1;
 
