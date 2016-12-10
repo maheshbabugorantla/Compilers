@@ -77,22 +77,17 @@ class TestInfix {
         funcNames.add("add");
         funcNames.add("mul");
 
-        String str = "(a + b) + func(b-c) + func1(a+b)";
-        //String str = "sin(x+y) * z";
-        //String str = "multiply(a,b);";
-        //String str = "add(multiplyresult,c);";
-
+        //String str = "(a + b) + func(b-c) + func1(a+b)"; // (PASS)
+        //String str = "sin(x+y) * z"; // PASS
+        //String str = "multiply(a,b);"; // PASS
+        //String str = "add(multiplyresult,c);"; // PASS
+        //String str = "0 - a + b";
         //String str = "(a+b)*(b+d)/mul(a,b)+play";
-
-        //String str = "a + 27 + b*(c/d + 4+c);";
+        //String str = "c + a*b + (a*b+c)/a + 20";
+        String str = "a + 27 + b*(c/d + 4+c);";
 
         infixtoPostfix(str, funcNames);
-
-        //String str1 = "func1(";
-        //System.out.println(str1.endsWith("("));
-
-        //return 0;
-
+        //System.out.println(infix_to_Postfix(str));
     }
 
     public static void infixtoPostfix(String infixStr, HashSet<String> funcNames) {
@@ -131,10 +126,6 @@ class TestInfix {
         list.removeAll(Collections.singleton(null)); // Removing Null from String array
         tokens = list.toArray(new String[list.size()]);
 
-        for(String token: tokens) {
-            System.out.println(token);
-        }
-
         Stack<String> OpStack = new Stack<String>(); // Stack used to store the Operators
 
         HashMap<String, Integer> opPrecedence = new HashMap<String, Integer>(); // This HashMap Stores the Operator Precedence
@@ -149,9 +140,9 @@ class TestInfix {
 
         for(String token: tokens) {
 
-            if(token.endsWith("(")) {
+/*            if(token.endsWith("(")) {
                 System.out.println(token.substring(0,(token.length() - 1)));
-            }
+            } */
 
             System.out.println("Token: " + token);
             if(!token.equals("")) {
@@ -159,27 +150,25 @@ class TestInfix {
                 OpStack.push(token);
             }
 
-            // Pushing the Function Label : if token is "["
+            // Pushing the Function Label
             else if(token.endsWith("(") && funcNames.contains(token.substring(0,(token.length()-1)))) {
-                OpStack.push(token.substring(0,token.length()-1));
+                OpStack.push(token.substring(0,token.length()-1)); // Pushing the Function name onto the Stack
                 //System.out.println("Inside function");
             }
 
             // Dealing with Operators ( + , - , * , / )
             else if(token.equals("+") || token.equals("-") || token.equals("*") || token.equals("/")) {
 
-                //int currentPrecedence = 3;
-
                 if(OpStack.isEmpty() || OpStack.peek().equals("(") || funcNames.contains(OpStack.peek())) {
                     OpStack.push(token);
                 }
 
-                else if(opPrecedence.get(token) != null && (opPrecedence.get(token) >= opPrecedence.get(OpStack.peek()))) {
+                else if(opPrecedence.get(token) != null && (opPrecedence.get(token) <= opPrecedence.get(OpStack.peek()))) {
+                    postFix.append(OpStack.pop() + " ");
                     OpStack.push(token);
                 }
 
                 else {
-                    postFix.append(OpStack.pop() + " ");
                     OpStack.push(token);
                 }
             }
@@ -211,7 +200,7 @@ class TestInfix {
 
                 String topToken = OpStack.peek();
 
-                System.out.println(topToken);
+                //System.out.println(topToken);
 
                 // topToken != "["
                 while(!funcNames.contains(topToken)) {
@@ -224,6 +213,7 @@ class TestInfix {
 
             // Appending Operand to the PostFix Expression
             else {
+                //System.out.println("Adding the Operand");
                 postFix.append(token + " ");
             }
 
