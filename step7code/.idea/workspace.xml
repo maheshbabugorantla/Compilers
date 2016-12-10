@@ -20,41 +20,21 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="test_expr_orig.out" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/myoutputs/test_expr_orig.out">
+      <file leaf-file-name="test_expr.micro" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/testcases/inputs/test_expr.micro">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="285">
-              <caret line="19" column="13" selection-start-line="19" selection-start-column="13" selection-end-line="19" selection-end-column="13" />
+            <state relative-caret-position="136">
+              <caret line="25" column="34" selection-start-line="25" selection-start-column="34" selection-end-line="25" selection-end-column="34" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="test_expr.tinyout" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/myoutputs/test_expr.tinyout">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="0">
-              <caret line="0" column="43" selection-start-line="0" selection-start-column="31" selection-end-line="0" selection-end-column="43" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="test_expr_orig.tinyout" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/myoutputs/test_expr_orig.tinyout">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="120">
-              <caret line="8" column="21" selection-start-line="8" selection-start-column="21" selection-end-line="8" selection-end-column="21" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="TestInfix.java" pinned="false" current-in-tab="true">
+      <file leaf-file-name="TestInfix.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/TestInfix.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="279">
-              <caret line="172" column="17" selection-start-line="172" selection-start-column="17" selection-end-line="172" selection-end-column="17" />
+            <state relative-caret-position="324">
+              <caret line="172" column="17" selection-start-line="161" selection-start-column="16" selection-end-line="172" selection-end-column="17" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -62,62 +42,28 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="fma.micro" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/testcases/inputs/fma.micro">
+      <file leaf-file-name="Micro468Listener.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/Micro468Listener.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="405">
-              <caret line="27" column="17" selection-start-line="27" selection-start-column="17" selection-end-line="27" selection-end-column="17" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="step4_testcase.micro" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/testcases/inputs/step4_testcase.micro">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="0">
-              <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="step4_testcase2.micro" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/testcases/inputs/step4_testcase2.micro">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="0">
-              <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="step4_testcase3.micro" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/testcases/inputs/step4_testcase3.micro">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="165">
-              <caret line="11" column="37" selection-start-line="11" selection-start-column="13" selection-end-line="11" selection-end-column="37" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="fibonacci2.micro" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/testcases/inputs/fibonacci2.micro">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-104">
-              <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="factorial2.micro" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/testcases/inputs/factorial2.micro">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="330">
-              <caret line="22" column="21" selection-start-line="22" selection-start-column="21" selection-end-line="22" selection-end-column="21" />
-              <folding />
+            <state relative-caret-position="281">
+              <caret line="277" column="0" selection-start-line="277" selection-start-column="0" selection-end-line="277" selection-end-column="0" />
+              <folding>
+                <element signature="method#isFloat#0;class#Micro468Listener#0" expanded="false" />
+                <element signature="method#pushSymbol#0;class#Micro468Listener#0" expanded="false" />
+                <element signature="method#addLocalVariables#0;class#Micro468Listener#0" expanded="false" />
+                <element signature="method#infix_to_Postfix#0;class#Micro468Listener#0" expanded="false" />
+                <element signature="method#getRegister#0;class#Micro468Listener#0" expanded="false" />
+                <element signature="method#getLabel#0;class#Micro468Listener#0" expanded="false" />
+                <element signature="method#OpCodeCheck#0;class#Micro468Listener#0" expanded="false" />
+                <element signature="method#checkStore#0;class#Micro468Listener#0" expanded="false" />
+                <element signature="method#checkCompOp#0;class#Micro468Listener#0" expanded="false" />
+                <element signature="method#enterPgm_body#0;class#Micro468Listener#0" expanded="false" />
+                <element signature="e#20255#20293#0" expanded="false" />
+                <element signature="method#exitElse_part#0;class#Micro468Listener#0" expanded="false" />
+                <element signature="method#exitIf_stmt#0;class#Micro468Listener#0" expanded="false" />
+                <element signature="method#enterVar_decl#0;class#Micro468Listener#0" expanded="false" />
+                <element signature="class#NodesPrinter#0;class#Micro468Listener#0" expanded="false" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -136,7 +82,6 @@
         <option value="$PROJECT_DIR$/src/CFGHandler.java" />
         <option value="$PROJECT_DIR$/src/IRNode.java" />
         <option value="$PROJECT_DIR$/../step6code/testcases/output/fma.out" />
-        <option value="$PROJECT_DIR$/src/Micro468Listener.java" />
         <option value="$PROJECT_DIR$/sample_fma.out" />
         <option value="$PROJECT_DIR$/sample_factorial.out" />
         <option value="$PROJECT_DIR$/sample_fibonacci.out" />
@@ -146,8 +91,9 @@
         <option value="$PROJECT_DIR$/myoutputs/test_adv.out" />
         <option value="$PROJECT_DIR$/src/TinyNode.java" />
         <option value="$PROJECT_DIR$/myoutputs/step4_testcase.out" />
-        <option value="$PROJECT_DIR$/myoutputs/test_expr.tinyout" />
         <option value="$PROJECT_DIR$/src/TestInfix.java" />
+        <option value="$PROJECT_DIR$/src/Micro468Listener.java" />
+        <option value="$PROJECT_DIR$/myoutputs/test_expr.tinyout" />
       </list>
     </option>
   </component>
@@ -210,25 +156,7 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="testcases" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="step7code" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="step7code" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="testcases" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="inputs" />
+              <option name="myItemId" value="myoutputs" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -502,7 +430,7 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-2" y="25" width="1284" height="784" extended-state="6" />
+    <frame x="-2" y="25" width="1284" height="784" extended-state="7" />
     <editor active="true" />
     <layout>
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
@@ -516,7 +444,7 @@
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Capture Tool" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.2463651" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.2463651" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="UI Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
@@ -599,31 +527,6 @@
         <state relative-caret-position="601">
           <caret line="198" column="7" selection-start-line="198" selection-start-column="7" selection-end-line="198" selection-end-column="7" />
           <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/Micro468Listener.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="168">
-          <caret line="715" column="19" selection-start-line="715" selection-start-column="19" selection-end-line="715" selection-end-column="19" />
-          <folding>
-            <element signature="method#isFloat#0;class#Micro468Listener#0" expanded="false" />
-            <element signature="method#pushSymbol#0;class#Micro468Listener#0" expanded="false" />
-            <element signature="method#addLocalVariables#0;class#Micro468Listener#0" expanded="false" />
-            <element signature="method#infixtoPostfix#0;class#Micro468Listener#0" expanded="false" />
-            <element signature="method#infix_to_Postfix#0;class#Micro468Listener#0" expanded="false" />
-            <element signature="method#getRegister#0;class#Micro468Listener#0" expanded="false" />
-            <element signature="method#getLabel#0;class#Micro468Listener#0" expanded="false" />
-            <element signature="method#OpCodeCheck#0;class#Micro468Listener#0" expanded="false" />
-            <element signature="method#checkStore#0;class#Micro468Listener#0" expanded="false" />
-            <element signature="method#checkCompOp#0;class#Micro468Listener#0" expanded="false" />
-            <element signature="method#enterPgm_body#0;class#Micro468Listener#0" expanded="false" />
-            <element signature="e#19879#19917#0" expanded="false" />
-            <element signature="method#exitElse_part#0;class#Micro468Listener#0" expanded="false" />
-            <element signature="method#exitIf_stmt#0;class#Micro468Listener#0" expanded="false" />
-            <element signature="method#enterVar_decl#0;class#Micro468Listener#0" expanded="false" />
-            <element signature="class#NodesPrinter#0;class#Micro468Listener#0" expanded="false" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -902,14 +805,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/testcases/inputs/test_expr.micro">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="315">
-          <caret line="21" column="22" selection-start-line="21" selection-start-column="22" selection-end-line="21" selection-end-column="22" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/TinyNode.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="18">
@@ -930,14 +825,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="285">
           <caret line="19" column="13" selection-start-line="19" selection-start-column="13" selection-end-line="19" selection-end-column="13" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/myoutputs/test_expr.tinyout">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="43" selection-start-line="0" selection-start-column="31" selection-end-line="0" selection-end-column="43" />
           <folding />
         </state>
       </provider>
@@ -990,21 +877,61 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/myoutputs/test_expr_orig.tinyout">
+    <entry file="file://$PROJECT_DIR$/src/TestInfix.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="120">
-          <caret line="8" column="21" selection-start-line="8" selection-start-column="21" selection-end-line="8" selection-end-column="21" />
+        <state relative-caret-position="324">
+          <caret line="172" column="17" selection-start-line="161" selection-start-column="16" selection-end-line="172" selection-end-column="17" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Micro468Listener.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="281">
+          <caret line="277" column="0" selection-start-line="277" selection-start-column="0" selection-end-line="277" selection-end-column="0" />
+          <folding>
+            <element signature="method#isFloat#0;class#Micro468Listener#0" expanded="false" />
+            <element signature="method#pushSymbol#0;class#Micro468Listener#0" expanded="false" />
+            <element signature="method#addLocalVariables#0;class#Micro468Listener#0" expanded="false" />
+            <element signature="method#infix_to_Postfix#0;class#Micro468Listener#0" expanded="false" />
+            <element signature="method#getRegister#0;class#Micro468Listener#0" expanded="false" />
+            <element signature="method#getLabel#0;class#Micro468Listener#0" expanded="false" />
+            <element signature="method#OpCodeCheck#0;class#Micro468Listener#0" expanded="false" />
+            <element signature="method#checkStore#0;class#Micro468Listener#0" expanded="false" />
+            <element signature="method#checkCompOp#0;class#Micro468Listener#0" expanded="false" />
+            <element signature="method#enterPgm_body#0;class#Micro468Listener#0" expanded="false" />
+            <element signature="e#20255#20293#0" expanded="false" />
+            <element signature="method#exitElse_part#0;class#Micro468Listener#0" expanded="false" />
+            <element signature="method#exitIf_stmt#0;class#Micro468Listener#0" expanded="false" />
+            <element signature="method#enterVar_decl#0;class#Micro468Listener#0" expanded="false" />
+            <element signature="class#NodesPrinter#0;class#Micro468Listener#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/myoutputs/test_expr.tinyout">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="105">
+          <caret line="7" column="31" selection-start-line="7" selection-start-column="31" selection-end-line="7" selection-end-column="31" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/TestInfix.java">
+    <entry file="file://$PROJECT_DIR$/myoutputs/test_expr_orig.tinyout">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="279">
-          <caret line="172" column="17" selection-start-line="172" selection-start-column="17" selection-end-line="172" selection-end-column="17" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
+        <state relative-caret-position="90">
+          <caret line="6" column="31" selection-start-line="6" selection-start-column="31" selection-end-line="6" selection-end-column="31" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/testcases/inputs/test_expr.micro">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="136">
+          <caret line="25" column="34" selection-start-line="25" selection-start-column="34" selection-end-line="25" selection-end-column="34" />
+          <folding />
         </state>
       </provider>
     </entry>

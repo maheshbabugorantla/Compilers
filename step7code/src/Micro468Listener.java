@@ -263,7 +263,7 @@ public class Micro468Listener extends MicroBaseListener {
 
 					//int currentPrecedence = 3;
 
-					if(OpStack.isEmpty() || OpStack.peek().equals("(") || funcNames.contains(OpStack.peek())) {
+/*					if(OpStack.isEmpty() || OpStack.peek().equals("(") || funcNames.contains(OpStack.peek())) {
 						OpStack.push(token);
 					}
 
@@ -273,6 +273,20 @@ public class Micro468Listener extends MicroBaseListener {
 
 					else {
 						postFix.append(OpStack.pop() + " ");
+						OpStack.push(token);
+					} */
+
+
+					if(OpStack.isEmpty() || OpStack.peek().equals("(") || funcNames.contains(OpStack.peek())) {
+						OpStack.push(token);
+					}
+
+					else if(opPrecedence.get(token) != null && (opPrecedence.get(token) <= opPrecedence.get(OpStack.peek()))) {
+						postFix.append(OpStack.pop() + " ");
+						OpStack.push(token);
+					}
+
+					else {
 						OpStack.push(token);
 					}
 				}
